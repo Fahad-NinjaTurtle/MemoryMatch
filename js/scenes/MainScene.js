@@ -1,5 +1,4 @@
-import Phaser from "phaser";
-
+// Phaser is loaded from CDN in index.html
 
 export default class MainScene extends Phaser.Scene {
   preload() {
@@ -10,20 +9,27 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    // Get actual canvas dimensions (works with RESIZE mode)
+    const screenW = this.scale.gameSize.width;
+    const screenH = this.scale.gameSize.height;
 
-    const screenW = this.sys.game.config.width;
-    const screenH = this.sys.game.config.height;
-
-    const baseSize = 800;
-    const scaleFactor = Math.min(screenW / baseSize, screenH / baseSize);
+    // Better responsive scaling - use smaller base for mobile
+    const isMobile = screenW < 768;
+    const baseWidth = isMobile ? 400 : 800;
+    const baseHeight = isMobile ? 600 : 800;
+    
+    const scaleFactorW = screenW / baseWidth;
+    const scaleFactorH = screenH / baseHeight;
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9; // 0.9 to add some padding
 
     this.rows = 4;
     this.cols = 4;
 
-    // dynamic card measurements
-    this.cardSize = 90 * 0.4 * scaleFactor;
-    this.spacing = 100 * scaleFactor;
-    this.topExtraSpacing = 70 * scaleFactor;
+    // dynamic card measurements - adjusted for better mobile support
+    const baseCardSize = isMobile ? 70 : 90;
+    this.cardSize = baseCardSize * 0.4 * scaleFactor;
+    this.spacing = (isMobile ? 80 : 100) * scaleFactor;
+    this.topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
 
     // dynamic scale used for both front + back flip
     this.cardBackScale = this.cardSize / 100;
@@ -33,8 +39,9 @@ export default class MainScene extends Phaser.Scene {
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
     this.startX = screenW / 2 - totalGridWidth / 2;
 
-    // top padding
-    this.startY = 80 * scaleFactor;
+    // center grid vertically (both mobile and PC)
+    const totalGridHeight = (this.rows - 1) * (this.cardSize + this.spacing + this.topExtraSpacing) + this.cardSize;
+    this.startY = screenH / 2 - totalGridHeight / 2;
 
     this.cardData = [];
     this.cardIndex = 0;
@@ -45,10 +52,15 @@ export default class MainScene extends Phaser.Scene {
     this.secondCard = null;
 
     this.isAnimating = false;
+    this.gameStarted = false;
+    this.gameEnded = false;
+    this.timeRemaining = 60; // 1 minute in seconds
+    this.timerEvent = null;
 
     this.createShuffleCards();
     this.shuffleCards();
 
+    // Create cards but disable them initially
     for (let i = 0; i < this.rows; i++) {
       this.cardData[i] = [];
 
@@ -61,7 +73,9 @@ export default class MainScene extends Phaser.Scene {
         const card = this.add
           .image(x, y, "cardBack")
           .setScale(this.cardBackScale)
-          .setInteractive();
+          .setInteractive()
+          .setAlpha(0) // Hide cards initially
+          .setVisible(true); // Ensure cards are visible (just transparent)
 
         card.cardType = this.shuffledCards[this.cardIndex];
         card.wasFlipped = false;
@@ -69,15 +83,212 @@ export default class MainScene extends Phaser.Scene {
         this.cardIndex++;
 
         card.on("pointerdown", () => {
-          this.flipCard(card);
+          if (this.gameStarted && !this.gameEnded) {
+            this.flipCard(card);
+          }
         });
 
+        // Disable cards initially
+        card.disableInteractive();
+
         this.cardData[i][j] = card;
+      }
+    }
+
+    // Setup HTML button listeners
+    this.setupHTMLElements();
+
+    // Handle window resize
+    this.scale.on('resize', this.handleResize, this);
+  }
+
+  handleResize() {
+    // Recalculate positions on resize
+    const screenW = this.scale.gameSize.width;
+    const screenH = this.scale.gameSize.height;
+
+    const isMobile = screenW < 768;
+    const baseWidth = isMobile ? 400 : 800;
+    const baseHeight = isMobile ? 600 : 800;
+    
+    const scaleFactorW = screenW / baseWidth;
+    const scaleFactorH = screenH / baseHeight;
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
+
+    const baseCardSize = isMobile ? 70 : 90;
+    const cardSize = baseCardSize * 0.4 * scaleFactor;
+    const spacing = (isMobile ? 80 : 100) * scaleFactor;
+    const topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
+
+    const cardBackScale = cardSize / 100;
+    const cardFrontScale = cardSize / 100 * 0.62;
+
+    // Center grid horizontally
+    const totalGridWidth = (this.cols - 1) * (cardSize + spacing);
+    const startX = screenW / 2 - totalGridWidth / 2;
+
+    // Center grid vertically
+    const totalGridHeight = (this.rows - 1) * (cardSize + spacing + topExtraSpacing) + cardSize;
+    const startY = screenH / 2 - totalGridHeight / 2;
+
+    // Update card positions and scales
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.cols; j++) {
+        const card = this.cardData[i][j];
+        const x = startX + (cardSize + spacing) * j;
+        const y = startY + (cardSize + spacing + topExtraSpacing) * i;
+        
+        card.setPosition(x, y);
+        
+        // Update scale if card is not flipped
+        if (!card.wasFlipped) {
+          card.setScale(cardBackScale);
+        }
+      }
+    }
+
+    // Update scale factors for future flips
+    this.cardBackScale = cardBackScale;
+    this.cardFrontScale = cardFrontScale;
+  }
+
+  setupHTMLElements() {
+    const startButton = document.getElementById('start-button');
+    const restartButton = document.getElementById('restart-button');
+
+    startButton.addEventListener('click', () => {
+      this.startGame();
+    });
+
+    restartButton.addEventListener('click', () => {
+      this.restartGame();
+    });
+  }
+
+  startGame() {
+    if (this.gameStarted) return;
+
+    this.gameStarted = true;
+    this.gameEnded = false;
+    this.timeRemaining = 60;
+
+    // Hide start screen
+    document.getElementById('start-screen').style.display = 'none';
+    
+    // Show countdown
+    document.getElementById('countdown').style.display = 'block';
+    this.updateCountdownDisplay();
+
+    // Show and enable all cards with fade-in animation
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.cols; j++) {
+        const card = this.cardData[i][j];
+        if (!card) continue; // Safety check
+        
+        card.setInteractive();
+        card.setVisible(true); // Ensure card is visible
+        
+        // Set alpha immediately, then fade in for smooth effect
+        card.setAlpha(1);
+        
+        // Optional: Fade in animation (cards are already visible above)
+        // this.tweens.add({
+        //   targets: card,
+        //   alpha: { from: 0, to: 1 },
+        //   duration: 400,
+        //   ease: 'Power2'
+        // });
+      }
+    }
+
+    // Start countdown timer
+    this.timerEvent = this.time.addEvent({
+      delay: 1000,
+      callback: this.updateTimer,
+      callbackScope: this,
+      loop: true
+    });
+  }
+
+  updateTimer() {
+    if (this.gameEnded) return;
+
+    this.timeRemaining--;
+
+    if (this.timeRemaining <= 0) {
+      this.timeRemaining = 0;
+      this.endGame(false);
+    } else {
+      this.updateCountdownDisplay();
+    }
+  }
+
+  updateCountdownDisplay() {
+    const minutes = Math.floor(this.timeRemaining / 60);
+    const seconds = this.timeRemaining % 60;
+    const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    const countdownTimeEl = document.getElementById('countdown-time');
+    if (countdownTimeEl) {
+      countdownTimeEl.textContent = timeString;
+    }
+
+    // Add warning class when time is low
+    const countdownEl = document.getElementById('countdown');
+    if (this.timeRemaining <= 10) {
+      countdownEl.classList.add('time-warning');
+    } else {
+      countdownEl.classList.remove('time-warning');
+    }
+  }
+
+  restartGame() {
+    // Reset game state
+    this.gameStarted = false;
+    this.gameEnded = false;
+    this.matchedCards = 0;
+    this.firstCard = null;
+    this.secondCard = null;
+    this.isAnimating = false;
+    this.timeRemaining = 60;
+
+    // Stop timer
+    if (this.timerEvent) {
+      this.timerEvent.remove();
+      this.timerEvent = null;
+    }
+
+    // Hide game end screen
+    document.getElementById('game-end').style.display = 'none';
+    
+    // Show start screen (use flex to maintain centering)
+    document.getElementById('start-screen').style.display = 'flex';
+    
+    // Hide countdown
+    document.getElementById('countdown').style.display = 'none';
+    document.getElementById('countdown').classList.remove('time-warning');
+
+    // Reset all cards
+    this.createShuffleCards();
+    this.shuffleCards();
+    this.cardIndex = 0;
+
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.cols; j++) {
+        const card = this.cardData[i][j];
+        card.setTexture("cardBack");
+        card.setScale(this.cardBackScale);
+        card.setAlpha(0); // Hide cards again
+        card.cardType = this.shuffledCards[this.cardIndex];
+        card.wasFlipped = false;
+        card.disableInteractive();
+        this.cardIndex++;
       }
     }
   }
 
   flipCard(card) {
+    if (!this.gameStarted || this.gameEnded) return;
     if (this.isAnimating) return;
     if (this.firstCard !== null && this.secondCard !== null) return;
     if (card.wasFlipped) return;
@@ -184,30 +395,44 @@ export default class MainScene extends Phaser.Scene {
 
   checkGameWin() {
     if (this.matchedCards >= 16) {
-      console.log("GAME WON!");
-
-      const overlay = this.add.graphics();
-      overlay.fillStyle(0x000000, 0.8);
-      overlay.fillRect(
-        0,
-        0,
-        this.sys.game.config.width,
-        this.sys.game.config.height
-      );
-      overlay.setDepth(10);
-
-      const restartBtn = this.add
-        .text(this.sys.game.config.width / 2, this.sys.game.config.height / 2, "RESTART", {
-          fontSize: "48px",
-          color: "#ffffff",
-        })
-        .setOrigin(0.5)
-        .setInteractive()
-        .setDepth(11);
-
-      restartBtn.on("pointerdown", () => {
-        this.scene.restart();
-      });
+      this.endGame(true);
     }
+  }
+
+  endGame(won) {
+    if (this.gameEnded) return;
+
+    this.gameEnded = true;
+
+    // Stop timer
+    if (this.timerEvent) {
+      this.timerEvent.remove();
+      this.timerEvent = null;
+    }
+
+    // Disable all cards
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.cols; j++) {
+        this.cardData[i][j].disableInteractive();
+      }
+    }
+
+    // Hide countdown
+    document.getElementById('countdown').style.display = 'none';
+
+    // Show game end screen
+    const gameEndEl = document.getElementById('game-end');
+    const endTitle = document.getElementById('end-title');
+    const endMessage = document.getElementById('end-message');
+
+    if (won) {
+      endTitle.textContent = 'Congratulations!';
+      endMessage.textContent = `You won with ${this.timeRemaining} seconds remaining!`;
+    } else {
+      endTitle.textContent = 'Time\'s Up!';
+      endMessage.textContent = `You matched ${this.matchedCards} out of 16 cards.`;
+    }
+
+    gameEndEl.style.display = 'block';
   }
 }

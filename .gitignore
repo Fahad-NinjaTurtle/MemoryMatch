@@ -1,17 +1,8 @@
-# Dependencies
+# Dependencies (if you add them later)
 node_modules/
+package-lock.json
 yarn.lock
 pnpm-lock.yaml
-
-# Build outputs
-dist/
-build/
-*.log
-
-# Environment variables
-.env
-.env.local
-.env.*.local
 
 # IDE and Editor files
 .vscode/
@@ -19,8 +10,6 @@ build/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
 
 # OS files
 .DS_Store
@@ -29,25 +18,12 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+Thumbs.db
 Desktop.ini
-
-# Cache directories
-.cache/
-.parcel-cache/
-.vite/
 
 # Temporary files
 *.tmp
 *.temp
 *.bak
-
-# Coverage reports
-coverage/
-.nyc_output/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
+*.log
 

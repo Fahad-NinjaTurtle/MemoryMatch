@@ -1,20 +1,41 @@
 import MainScene from './scenes/MainScene.js'
 
-import Phaser from "phaser";
+// Phaser is loaded from CDN in index.html
 
+// Get window dimensions
+const getGameDimensions = () => {
+    return {
+        width: window.innerWidth,
+        height: window.innerHeight
+    };
+};
+
+const dimensions = getGameDimensions();
 
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 800,
+    width: dimensions.width,
+    height: dimensions.height,
     backgroundColor: "#1d1d1d",
 
     scale: {
-        mode: Phaser.Scale.FIT,   // Resize the game to fit
-        autoCenter: Phaser.Scale.CENTER_BOTH, // Center on screen
+        mode: Phaser.Scale.RESIZE,  // Resize to fit container
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: '100%',
+        height: '100%'
     },
 
+    parent: 'game-container',
     scene: [MainScene]
 };
 
 const game = new Phaser.Game(config);
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    const newDimensions = getGameDimensions();
+    game.scale.resize(newDimensions.width, newDimensions.height);
+});
+
+// Expose game instance for HTML interaction
+window.gameInstance = game;
