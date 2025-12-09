@@ -6,6 +6,8 @@ export default class MainScene extends Phaser.Scene {
     for (let i = 1; i <= 8; i++) {
       this.load.image("cardFront" + i, `./assets/card-front-${i}.png`);
     }
+    // Load background music
+    this.load.audio("bgMusic", "./sounds/Bg Sound.mp3");
   }
 
   create() {
@@ -54,8 +56,9 @@ export default class MainScene extends Phaser.Scene {
     this.isAnimating = false;
     this.gameStarted = false;
     this.gameEnded = false;
-    this.timeRemaining = 60; // 1 minute in seconds
+    this.timeRemaining = 45; // 1 minute in seconds
     this.timerEvent = null;
+    this.bgMusic = null; // Background music reference
 
     this.createShuffleCards();
     this.shuffleCards();
@@ -208,6 +211,12 @@ export default class MainScene extends Phaser.Scene {
       callbackScope: this,
       loop: true
     });
+
+    // Play background music
+    if (!this.bgMusic) {
+      this.bgMusic = this.sound.add("bgMusic", { loop: true, volume: 0.5 });
+    }
+    this.bgMusic.play();
   }
 
   updateTimer() {
@@ -256,6 +265,11 @@ export default class MainScene extends Phaser.Scene {
     if (this.timerEvent) {
       this.timerEvent.remove();
       this.timerEvent = null;
+    }
+
+    // Stop background music
+    if (this.bgMusic && this.bgMusic.isPlaying) {
+      this.bgMusic.stop();
     }
 
     // Hide game end screen
@@ -331,8 +345,44 @@ export default class MainScene extends Phaser.Scene {
   }
 
   shuffleCards() {
-    for (let i = this.shuffledCards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+    // Extreme randomization: Multiple shuffle passes for maximum randomness
+    
+    // Method 1: Fisher-Yates shuffle (multiple passes)
+    const shufflePasses = 5; // Shuffle 5 times for extreme randomness
+    for (let pass = 0; pass < shufflePasses; pass++) {
+      for (let i = this.shuffledCards.length - 1; i > 0; i--) {
+        // Use crypto.getRandomValues for better randomness if available
+        let randomIndex;
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+          const randomArray = new Uint32Array(1);
+          crypto.getRandomValues(randomArray);
+          randomIndex = Math.floor((randomArray[0] / 4294967296) * (i + 1));
+        } else {
+          // Fallback to Math.random with additional entropy
+          randomIndex = Math.floor((Math.random() * Date.now() / 1000) % (i + 1));
+        }
+        
+        [this.shuffledCards[i], this.shuffledCards[randomIndex]] = [
+          this.shuffledCards[randomIndex],
+          this.shuffledCards[i],
+        ];
+      }
+    }
+
+    // Method 2: Additional random swaps for extra randomness
+    const extraSwaps = 20; // Do 20 extra random swaps
+    for (let i = 0; i < extraSwaps; i++) {
+      const index1 = Math.floor(Math.random() * this.shuffledCards.length);
+      const index2 = Math.floor(Math.random() * this.shuffledCards.length);
+      [this.shuffledCards[index1], this.shuffledCards[index2]] = [
+        this.shuffledCards[index2],
+        this.shuffledCards[index1],
+      ];
+    }
+
+    // Method 3: Reverse shuffle pass (shuffle in reverse direction)
+    for (let i = 0; i < this.shuffledCards.length - 1; i++) {
+      const j = Math.floor(Math.random() * (this.shuffledCards.length - i)) + i;
       [this.shuffledCards[i], this.shuffledCards[j]] = [
         this.shuffledCards[j],
         this.shuffledCards[i],
@@ -403,6 +453,11 @@ export default class MainScene extends Phaser.Scene {
     if (this.gameEnded) return;
 
     this.gameEnded = true;
+
+    // Stop background music
+    if (this.bgMusic && this.bgMusic.isPlaying) {
+      this.bgMusic.stop();
+    }
 
     // Stop timer
     if (this.timerEvent) {
