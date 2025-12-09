@@ -40,26 +40,6 @@ cd memory-game
 # Then open index.html in your browser
 ```
 
-## 🚀 Deploying to GitHub Pages
-
-The project uses Phaser from CDN, so **no build step is required!** You can deploy directly:
-
-1. **Push your code to GitHub:**
-   ```bash
-   git add .
-   git commit -m "Update project"
-   git push origin main
-   ```
-
-2. **Configure GitHub Pages:**
-   - Go to your repository settings on GitHub
-   - Navigate to "Pages" in the left sidebar
-   - Under "Source", select "Deploy from a branch"
-   - Choose the `main` (or `master`) branch
-   - Select the `/ (root)` folder (not `/dist`)
-   - Click "Save"
-
-
 
 ## 🎯 How to Play
 
