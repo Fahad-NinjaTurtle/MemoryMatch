@@ -18,6 +18,11 @@ const config = {
     height: dimensions.height,
     backgroundColor: "#1d1d1d",
 
+    // Increase rendering resolution on high-DPI (mobile) screens
+    resolution: window.devicePixelRatio || 1,
+    antialias: true,
+    pixelArt: false,
+
     scale: {
         mode: Phaser.Scale.RESIZE,  // Resize to fit container
         autoCenter: Phaser.Scale.CENTER_BOTH,

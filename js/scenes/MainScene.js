@@ -35,8 +35,9 @@ export default class MainScene extends Phaser.Scene {
     this.topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
 
     // dynamic scale used for both front + back flip
-    this.cardBackScale = this.cardSize / 100;
-    this.cardFrontScale = this.cardSize / 100 * 0.62;
+    // clamp so we don't blow up the source textures (prevents pixelation)
+    this.cardBackScale = Math.min(1, this.cardSize / 100);
+    this.cardFrontScale = Math.min(1, (this.cardSize / 100) * 0.62);
 
     // center grid horizontally
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
@@ -124,8 +125,9 @@ export default class MainScene extends Phaser.Scene {
     const spacing = (isMobile ? 80 : 100) * scaleFactor;
     const topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
 
-    const cardBackScale = cardSize / 100;
-    const cardFrontScale = cardSize / 100 * 0.62;
+    // Clamp to avoid scaling above the original texture size on high-DPI screens
+    const cardBackScale = Math.min(1, cardSize / 100);
+    const cardFrontScale = Math.min(1, (cardSize / 100) * 0.62);
 
     // Center grid horizontally
     const totalGridWidth = (this.cols - 1) * (cardSize + spacing);
