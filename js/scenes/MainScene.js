@@ -6,8 +6,9 @@ export default class MainScene extends Phaser.Scene {
     for (let i = 1; i <= 8; i++) {
       this.load.image("cardFront" + i, `./assets/card-front-${i}.png`);
     }
-    // Load background music
+    // Load sounds
     this.load.audio("bgMusic", "./sounds/Bg Sound.mp3");
+    this.load.audio("flipSound", "./sounds/flipSound.mp3");
   }
 
   create() {
@@ -309,6 +310,9 @@ export default class MainScene extends Phaser.Scene {
 
     this.isAnimating = true;
 
+    // Play flip sound
+    this.sound.play("flipSound", { volume: 0.7 });
+
     if (this.firstCard === null) {
       this.firstCard = card;
     } else {
@@ -394,6 +398,9 @@ export default class MainScene extends Phaser.Scene {
     if (!card) return;
 
     card.wasFlipped = false;
+
+    // Play unflip sound
+    this.sound.play("flipSound", { volume: 0.7 });
 
     this.tweens.add({
       targets: card,
