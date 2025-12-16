@@ -19,7 +19,7 @@ const MAX_DPR = rawDPR > 2 ? 3 : 2; // Allow 3x for high-DPI screens
 const dpr = Math.min(rawDPR, MAX_DPR);
 
 const config = {
-    type: Phaser.AUTO,
+    type: Phaser.WEBGL,
     width: dimensions.width,
     height: dimensions.height,
     backgroundColor: "#1d1d1d",
