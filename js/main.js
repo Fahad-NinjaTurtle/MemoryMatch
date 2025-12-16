@@ -16,7 +16,7 @@ const dimensions = getGameDimensions();
 // High refresh rate screens (90Hz+) often need higher DPR
 const rawDPR = window.devicePixelRatio || 1;
 const MAX_DPR = rawDPR > 2 ? 3 : 2; // Allow 3x for high-DPI screens
-const dpr = Math.min(rawDPR, MAX_DPR);
+const dpr = Math.max(rawDPR, MAX_DPR);
 
 const config = {
     type: Phaser.WEBGL,
