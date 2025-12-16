@@ -31,7 +31,7 @@ const config = {
     pixelArt: false,
 
     scale: {
-        mode: Phaser.Scale.FIT,  // Resize to fit container
+        mode: Phaser.Scale.RESIZE,  // Resize to fit container
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: '100%',
         height: '100%'

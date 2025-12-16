@@ -9,24 +9,11 @@ export default class MainScene extends Phaser.Scene {
     // Load sounds
     this.load.audio("bgMusic", "./sounds/Bg Sound.mp3");
     this.load.audio("flipSound", "./sounds/flipSound.mp3");
-  }
 
-  // Set LINEAR filtering on all card textures for crisp rendering
-  // LINEAR is essential for smooth, non-pixelated rendering on high-DPI screens
-  setCardTextureFilters() {
-    // Set LINEAR filtering for card back texture
-    const cardBackTexture = this.textures.get("cardBack");
-    if (cardBackTexture) {
-      cardBackTexture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-    }
+    this.textures.each(texture => {
+      texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    });
     
-    // Set LINEAR filtering for all card front textures
-    for (let i = 1; i <= 8; i++) {
-      const cardFrontTexture = this.textures.get("cardFront" + i);
-      if (cardFrontTexture) {
-        cardFrontTexture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-      }
-    }
   }
 
   create() {
@@ -46,23 +33,16 @@ export default class MainScene extends Phaser.Scene {
     this.rows = 4;
     this.cols = 4;
 
-    // Card texture dimensions (your actual PNG dimensions: 700x500)
-    const CARD_TEXTURE_WIDTH = 180;
-
     // dynamic card measurements - adjusted for better mobile support
-    // Increased sizes to use more of the 700px texture for better quality
-    const baseCardSize = isMobile ? 140 : 180;
+    const baseCardSize = isMobile ? 70 : 90;
     this.cardSize = baseCardSize * 0.4 * scaleFactor;
-    this.spacing = (isMobile ? 70 : 80) * scaleFactor;
-    this.topExtraSpacing = (isMobile ? 50 : 50) * scaleFactor;
+    this.spacing = (isMobile ? 80 : 100) * scaleFactor;
+    this.topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
 
-    // CRITICAL: Calculate scale based on ACTUAL texture dimensions (700px)
-    // Scale = desired display size (in logical pixels) / texture size
-    // Phaser's resolution setting handles DPR multiplication automatically
-    // DO NOT clamp to 1 - Phaser will render at higher resolution internally
-    this.cardBackScale = this.cardSize / CARD_TEXTURE_WIDTH;
-    // Card front is 62% of back size
-    this.cardFrontScale = (this.cardSize * 0.62) / CARD_TEXTURE_WIDTH; 
+    // dynamic scale used for both front + back flip
+    // clamp so we don't blow up the source textures (prevents pixelation)
+    this.cardBackScale = Math.min(1, this.cardSize / 100);
+    this.cardFrontScale = Math.min(1, (this.cardSize / 100) * 0.62); 
 
     // center grid horizontally
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
@@ -91,10 +71,6 @@ export default class MainScene extends Phaser.Scene {
 
     this.createShuffleCards();
     this.shuffleCards();
-
-    // Set LINEAR texture filtering for crisp rendering on high-DPI screens
-    // This must be called after textures are loaded (in create, not preload)
-    this.setCardTextureFilters();
 
     // Create cards but disable them initially
     for (let i = 0; i < this.rows; i++) {
@@ -151,19 +127,14 @@ export default class MainScene extends Phaser.Scene {
     const scaleFactorH = screenH / baseHeight;
     const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
 
-    // Card texture dimensions (must match create() method)
-    const CARD_TEXTURE_WIDTH = 700;
-
-    // Match the increased base sizes from create() method
-    const baseCardSize = isMobile ? 140 : 180;
+    const baseCardSize = isMobile ? 70 : 90;
     const cardSize = baseCardSize * 0.4 * scaleFactor;
     const spacing = (isMobile ? 80 : 100) * scaleFactor;
     const topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
 
-    // Calculate scale based on actual texture dimensions
-    // DO NOT clamp - Phaser handles high-DPI rendering via resolution setting
-    const cardBackScale = cardSize / CARD_TEXTURE_WIDTH;
-    const cardFrontScale = (cardSize * 0.62) / CARD_TEXTURE_WIDTH;
+    // Clamp to avoid scaling above the original texture size on high-DPI screens
+    const cardBackScale = Math.min(1, cardSize / 100);
+    const cardFrontScale = Math.min(1, (cardSize / 100) * 0.62);
 
     // Center grid horizontally
     const totalGridWidth = (this.cols - 1) * (cardSize + spacing);
