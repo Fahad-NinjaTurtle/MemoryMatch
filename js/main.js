@@ -56,7 +56,8 @@ const config = {
         mode: Phaser.Scale.RESIZE,  // Resize to fit container
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: '100%',
-        height: '100%'
+        height: '100%',
+        zoom: 0.999
     },
 
     parent: 'game-container',
