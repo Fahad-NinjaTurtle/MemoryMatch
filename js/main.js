@@ -41,7 +41,9 @@ const MAX_DPR = rawDPR > 2 ? 3 : 2; // Allow 3x for high-DPI screens
 const dpr = Math.min(rawDPR, MAX_DPR); // Fixed: was Math.max, should be Math.min
 
 const config = {
-    type: Phaser.WEBGL,
+    // AUTO will pick WEBGL when available (better performance), else CANVAS
+    // Crispness is controlled via `resolution` below (do NOT multiply width/height by DPR)
+    type: Phaser.AUTO,
     width: dimensions.width,
     height: dimensions.height,
     backgroundColor: "#1d1d1d",
@@ -54,10 +56,7 @@ const config = {
 
     scale: {
         mode: Phaser.Scale.RESIZE,  // Resize to fit container
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: '100%',
-        height: '100%',
-        zoom: 0.999
+        autoCenter: Phaser.Scale.CENTER_BOTH
     },
 
     parent: 'game-container',
