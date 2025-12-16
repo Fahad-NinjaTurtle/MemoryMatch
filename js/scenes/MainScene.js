@@ -9,6 +9,11 @@ export default class MainScene extends Phaser.Scene {
     // Load sounds
     this.load.audio("bgMusic", "./sounds/Bg Sound.mp3");
     this.load.audio("flipSound", "./sounds/flipSound.mp3");
+
+    this.textures.each(texture => {
+      texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    });
+    
   }
 
   create() {
@@ -36,10 +41,8 @@ export default class MainScene extends Phaser.Scene {
 
     // dynamic scale used for both front + back flip
     // clamp so we don't blow up the source textures (prevents pixelation)
-    // this.cardBackScale = Math.min(1, this.cardSize / 100);
-    // this.cardFrontScale = Math.min(1, (this.cardSize / 100) * 0.62);
-    this.cardBackScale = this.cardSize / 100;
-    this.cardFrontScale = (this.cardSize / 100) * 0.62;
+    this.cardBackScale = Math.min(1, this.cardSize / 100);
+    this.cardFrontScale = Math.min(1, (this.cardSize / 100) * 0.62); 
 
     // center grid horizontally
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
