@@ -12,19 +12,26 @@ const getGameDimensions = () => {
 
 const dimensions = getGameDimensions();
 
+// Cap devicePixelRatio at 2 for performance (most high-DPI screens are 2x)
+// This prevents excessive memory usage on 3x devices while maintaining quality
+// High refresh rate screens (90Hz, 120Hz) often have high DPR too
+const MAX_DPR = 2;
+const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+
 const config = {
     type: Phaser.AUTO,
     width: dimensions.width,
     height: dimensions.height,
     backgroundColor: "#1d1d1d",
 
-    // Increase rendering resolution on high-DPI (mobile) screens
-    resolution: 1,
+    // CRITICAL: Set resolution to DPR for high-DPI rendering
+    // This ensures crisp rendering on high-DPI and high refresh rate screens
+    resolution: dpr,
     antialias: true,
     pixelArt: false,
 
     scale: {
-        mode: Phaser.Scale.RESIZE,  // Resize to fit container
+        mode: Phaser.Scale.FIT,  // Resize to fit container
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: '100%',
         height: '100%'
