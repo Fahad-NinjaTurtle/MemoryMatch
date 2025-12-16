@@ -12,11 +12,11 @@ const getGameDimensions = () => {
 
 const dimensions = getGameDimensions();
 
-// Cap devicePixelRatio at 2 for performance (most high-DPI screens are 2x)
-// This prevents excessive memory usage on 3x devices while maintaining quality
-// High refresh rate screens (90Hz, 120Hz) often have high DPR too
-const MAX_DPR = 2;
-const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+
+// High refresh rate screens (90Hz+) often need higher DPR
+const rawDPR = window.devicePixelRatio || 1;
+const MAX_DPR = rawDPR > 2 ? 3 : 2; // Allow 3x for high-DPI screens
+const dpr = Math.min(rawDPR, MAX_DPR);
 
 const config = {
     type: Phaser.AUTO,
