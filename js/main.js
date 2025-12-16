@@ -19,7 +19,7 @@ const config = {
     backgroundColor: "#1d1d1d",
 
     // Increase rendering resolution on high-DPI (mobile) screens
-    resolution: window.devicePixelRatio || 1,
+    resolution: Math.min(window.devicePixelRatio, 2),
     antialias: true,
     pixelArt: false,
 

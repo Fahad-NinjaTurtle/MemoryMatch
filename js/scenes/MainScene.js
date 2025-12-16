@@ -20,7 +20,7 @@ export default class MainScene extends Phaser.Scene {
     const isMobile = screenW < 768;
     const baseWidth = isMobile ? 400 : 800;
     const baseHeight = isMobile ? 600 : 800;
-    
+
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
     const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9; // 0.9 to add some padding
@@ -36,15 +36,19 @@ export default class MainScene extends Phaser.Scene {
 
     // dynamic scale used for both front + back flip
     // clamp so we don't blow up the source textures (prevents pixelation)
-    this.cardBackScale = Math.min(1, this.cardSize / 100);
-    this.cardFrontScale = Math.min(1, (this.cardSize / 100) * 0.62);
+    // this.cardBackScale = Math.min(1, this.cardSize / 100);
+    // this.cardFrontScale = Math.min(1, (this.cardSize / 100) * 0.62);
+    this.cardBackScale = this.cardSize / 100;
+    this.cardFrontScale = (this.cardSize / 100) * 0.62;
 
     // center grid horizontally
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
     this.startX = screenW / 2 - totalGridWidth / 2;
 
     // center grid vertically (both mobile and PC)
-    const totalGridHeight = (this.rows - 1) * (this.cardSize + this.spacing + this.topExtraSpacing) + this.cardSize;
+    const totalGridHeight =
+      (this.rows - 1) * (this.cardSize + this.spacing + this.topExtraSpacing) +
+      this.cardSize;
     this.startY = screenH / 2 - totalGridHeight / 2;
 
     this.cardData = [];
@@ -104,7 +108,7 @@ export default class MainScene extends Phaser.Scene {
     this.setupHTMLElements();
 
     // Handle window resize
-    this.scale.on('resize', this.handleResize, this);
+    this.scale.on("resize", this.handleResize, this);
   }
 
   handleResize() {
@@ -115,7 +119,7 @@ export default class MainScene extends Phaser.Scene {
     const isMobile = screenW < 768;
     const baseWidth = isMobile ? 400 : 800;
     const baseHeight = isMobile ? 600 : 800;
-    
+
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
     const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
@@ -134,7 +138,8 @@ export default class MainScene extends Phaser.Scene {
     const startX = screenW / 2 - totalGridWidth / 2;
 
     // Center grid vertically
-    const totalGridHeight = (this.rows - 1) * (cardSize + spacing + topExtraSpacing) + cardSize;
+    const totalGridHeight =
+      (this.rows - 1) * (cardSize + spacing + topExtraSpacing) + cardSize;
     const startY = screenH / 2 - totalGridHeight / 2;
 
     // Update card positions and scales
@@ -143,9 +148,9 @@ export default class MainScene extends Phaser.Scene {
         const card = this.cardData[i][j];
         const x = startX + (cardSize + spacing) * j;
         const y = startY + (cardSize + spacing + topExtraSpacing) * i;
-        
+
         card.setPosition(x, y);
-        
+
         // Update scale if card is not flipped
         if (!card.wasFlipped) {
           card.setScale(cardBackScale);
@@ -159,14 +164,14 @@ export default class MainScene extends Phaser.Scene {
   }
 
   setupHTMLElements() {
-    const startButton = document.getElementById('start-button');
-    const restartButton = document.getElementById('restart-button');
+    const startButton = document.getElementById("start-button");
+    const restartButton = document.getElementById("restart-button");
 
-    startButton.addEventListener('click', () => {
+    startButton.addEventListener("click", () => {
       this.startGame();
     });
 
-    restartButton.addEventListener('click', () => {
+    restartButton.addEventListener("click", () => {
       this.restartGame();
     });
   }
@@ -179,10 +184,10 @@ export default class MainScene extends Phaser.Scene {
     this.timeRemaining = 60;
 
     // Hide start screen
-    document.getElementById('start-screen').style.display = 'none';
-    
+    document.getElementById("start-screen").style.display = "none";
+
     // Show countdown
-    document.getElementById('countdown').style.display = 'block';
+    document.getElementById("countdown").style.display = "block";
     this.updateCountdownDisplay();
 
     // Show and enable all cards with fade-in animation
@@ -190,13 +195,13 @@ export default class MainScene extends Phaser.Scene {
       for (let j = 0; j < this.cols; j++) {
         const card = this.cardData[i][j];
         if (!card) continue; // Safety check
-        
+
         card.setInteractive();
         card.setVisible(true); // Ensure card is visible
-        
+
         // Set alpha immediately, then fade in for smooth effect
         card.setAlpha(1);
-        
+
         // Optional: Fade in animation (cards are already visible above)
         // this.tweens.add({
         //   targets: card,
@@ -212,7 +217,7 @@ export default class MainScene extends Phaser.Scene {
       delay: 1000,
       callback: this.updateTimer,
       callbackScope: this,
-      loop: true
+      loop: true,
     });
 
     // Play background music
@@ -238,19 +243,21 @@ export default class MainScene extends Phaser.Scene {
   updateCountdownDisplay() {
     const minutes = Math.floor(this.timeRemaining / 60);
     const seconds = this.timeRemaining % 60;
-    const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    
-    const countdownTimeEl = document.getElementById('countdown-time');
+    const timeString = `${String(minutes).padStart(2, "0")}:${String(
+      seconds
+    ).padStart(2, "0")}`;
+
+    const countdownTimeEl = document.getElementById("countdown-time");
     if (countdownTimeEl) {
       countdownTimeEl.textContent = timeString;
     }
 
     // Add warning class when time is low
-    const countdownEl = document.getElementById('countdown');
+    const countdownEl = document.getElementById("countdown");
     if (this.timeRemaining <= 10) {
-      countdownEl.classList.add('time-warning');
+      countdownEl.classList.add("time-warning");
     } else {
-      countdownEl.classList.remove('time-warning');
+      countdownEl.classList.remove("time-warning");
     }
   }
 
@@ -276,14 +283,14 @@ export default class MainScene extends Phaser.Scene {
     }
 
     // Hide game end screen
-    document.getElementById('game-end').style.display = 'none';
-    
+    document.getElementById("game-end").style.display = "none";
+
     // Show start screen (use flex to maintain centering)
-    document.getElementById('start-screen').style.display = 'flex';
-    
+    document.getElementById("start-screen").style.display = "flex";
+
     // Hide countdown
-    document.getElementById('countdown').style.display = 'none';
-    document.getElementById('countdown').classList.remove('time-warning');
+    document.getElementById("countdown").style.display = "none";
+    document.getElementById("countdown").classList.remove("time-warning");
 
     // Reset all cards
     this.createShuffleCards();
@@ -352,22 +359,24 @@ export default class MainScene extends Phaser.Scene {
 
   shuffleCards() {
     // Extreme randomization: Multiple shuffle passes for maximum randomness
-    
+
     // Method 1: Fisher-Yates shuffle (multiple passes)
     const shufflePasses = 5; // Shuffle 5 times for extreme randomness
     for (let pass = 0; pass < shufflePasses; pass++) {
       for (let i = this.shuffledCards.length - 1; i > 0; i--) {
         // Use crypto.getRandomValues for better randomness if available
         let randomIndex;
-        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        if (typeof crypto !== "undefined" && crypto.getRandomValues) {
           const randomArray = new Uint32Array(1);
           crypto.getRandomValues(randomArray);
           randomIndex = Math.floor((randomArray[0] / 4294967296) * (i + 1));
         } else {
           // Fallback to Math.random with additional entropy
-          randomIndex = Math.floor((Math.random() * Date.now() / 1000) % (i + 1));
+          randomIndex = Math.floor(
+            ((Math.random() * Date.now()) / 1000) % (i + 1)
+          );
         }
-        
+
         [this.shuffledCards[i], this.shuffledCards[randomIndex]] = [
           this.shuffledCards[randomIndex],
           this.shuffledCards[i],
@@ -482,21 +491,21 @@ export default class MainScene extends Phaser.Scene {
     }
 
     // Hide countdown
-    document.getElementById('countdown').style.display = 'none';
+    document.getElementById("countdown").style.display = "none";
 
     // Show game end screen
-    const gameEndEl = document.getElementById('game-end');
-    const endTitle = document.getElementById('end-title');
-    const endMessage = document.getElementById('end-message');
+    const gameEndEl = document.getElementById("game-end");
+    const endTitle = document.getElementById("end-title");
+    const endMessage = document.getElementById("end-message");
 
     if (won) {
-      endTitle.textContent = 'Congratulations!';
+      endTitle.textContent = "Congratulations!";
       endMessage.textContent = `You won with ${this.timeRemaining} seconds remaining!`;
     } else {
-      endTitle.textContent = 'Time\'s Up!';
+      endTitle.textContent = "Time's Up!";
       endMessage.textContent = `You matched ${this.matchedCards} out of 16 cards.`;
     }
 
-    gameEndEl.style.display = 'block';
+    gameEndEl.style.display = "block";
   }
 }
