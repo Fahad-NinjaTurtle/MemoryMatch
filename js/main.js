@@ -37,8 +37,7 @@ function createCanvas(width, height, set2dTransform = true) {
 
 // High refresh rate screens (90Hz+) often need higher DPR
 const rawDPR = window.devicePixelRatio || 1;
-const MAX_DPR = rawDPR > 2 ? 3 : 2; // Allow 3x for high-DPI screens
-const dpr = Math.min(rawDPR, MAX_DPR); // Fixed: was Math.max, should be Math.min
+const dpr = Math.min(rawDPR, 4);
 
 const config = {
     // AUTO will pick WEBGL when available (better performance), else CANVAS

@@ -33,6 +33,9 @@ export default class MainScene extends Phaser.Scene {
     this.rows = 4;
     this.cols = 4;
 
+    const keys = ["cardBack", ...Array.from({ length: 8 }, (_, i) => `cardFront${i + 1}`)];
+    keys.forEach((k) => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR));
+    
     // dynamic card measurements - adjusted for better mobile support
     const baseCardSize = isMobile ? 70 : 90;
     this.cardSize = baseCardSize * 0.4 * scaleFactor;
