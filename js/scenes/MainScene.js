@@ -10,9 +10,9 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("bgMusic", "./sounds/Bg Sound.mp3");
     this.load.audio("flipSound", "./sounds/flipSound.mp3");
 
-    this.textures.each(texture => {
-      texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-    });
+    // this.textures.each(texture => {
+    //   texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    // });
     
   }
 
@@ -35,7 +35,7 @@ export default class MainScene extends Phaser.Scene {
 
     const keys = ["cardBack", ...Array.from({ length: 8 }, (_, i) => `cardFront${i + 1}`)];
     keys.forEach((k) => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR));
-    
+
     // dynamic card measurements - adjusted for better mobile support
     const baseCardSize = isMobile ? 70 : 90;
     this.cardSize = baseCardSize * 0.4 * scaleFactor;

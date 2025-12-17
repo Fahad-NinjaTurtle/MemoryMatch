@@ -12,32 +12,9 @@ const getGameDimensions = () => {
 
 const dimensions = getGameDimensions();
 
-/**
- * Creates a high-DPI canvas to fix blurriness on mobile devices
- * This function multiplies canvas dimensions by device pixel ratio
- * and scales the context accordingly for crisp rendering
- */
-function createCanvas(width, height, set2dTransform = true) {
-    const ratio = Math.ceil(window.devicePixelRatio || 1);
-    const canvas = document.createElement('canvas');
-    canvas.width = width * ratio;
-    canvas.height = height * ratio;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    
-    if (set2dTransform) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        }
-    }
-    
-    return canvas;
-}
-
 // High refresh rate screens (90Hz+) often need higher DPR
 const rawDPR = window.devicePixelRatio || 1;
-const dpr = Math.min(rawDPR, 4);
+// const dpr = Math.min(rawDPR, 4);
 
 const config = {
     // AUTO will pick WEBGL when available (better performance), else CANVAS
@@ -49,7 +26,7 @@ const config = {
 
     // CRITICAL: Set resolution to DPR for high-DPI rendering
     // This ensures crisp rendering on high-DPI and high refresh rate screens
-    resolution: dpr,
+    resolution: rawDPR,
     antialias: true,
     pixelArt: false,
 
