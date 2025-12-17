@@ -28,7 +28,7 @@ export default class MainScene extends Phaser.Scene {
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9; // 0.9 to add some padding
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.95; // 0.9 to add some padding
 
     this.rows = 4;
     this.cols = 4;
@@ -37,7 +37,7 @@ export default class MainScene extends Phaser.Scene {
     keys.forEach((k) => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR));
 
     // dynamic card measurements - adjusted for better mobile support
-    const baseCardSize = isMobile ? 70 : 90;
+    const baseCardSize = isMobile ? 90 : 90;
     this.cardSize = baseCardSize * 0.4 * scaleFactor;
     this.spacing = (isMobile ? 80 : 100) * scaleFactor;
     this.topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
@@ -130,8 +130,8 @@ export default class MainScene extends Phaser.Scene {
     const scaleFactorH = screenH / baseHeight;
     const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
 
-    const baseCardSize = isMobile ? 70 : 90;
-    const cardSize = baseCardSize * 0.4 * scaleFactor;
+    const baseCardSize = isMobile ? 90 : 90;
+    const cardSize = baseCardSize * 0.5 * scaleFactor;
     const spacing = (isMobile ? 80 : 100) * scaleFactor;
     const topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
 
