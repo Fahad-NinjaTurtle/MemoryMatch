@@ -13,8 +13,8 @@ const getGameDimensions = () => {
 const dimensions = getGameDimensions();
 
 // High refresh rate screens (90Hz+) often need higher DPR
-const rawDPR = window.devicePixelRatio || 1;
-// const dpr = Math.min(rawDPR, 4);
+const rawDPR = window.devicePixelRatio;
+const dpr = Math.min(rawDPR, 2);
 
 const config = {
     // AUTO will pick WEBGL when available (better performance), else CANVAS
@@ -26,7 +26,7 @@ const config = {
 
     // CRITICAL: Set resolution to DPR for high-DPI rendering
     // This ensures crisp rendering on high-DPI and high refresh rate screens
-    resolution: rawDPR,
+    resolution: dpr,
     antialias: true,
     pixelArt: false,
 

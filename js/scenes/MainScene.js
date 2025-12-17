@@ -23,8 +23,8 @@ export default class MainScene extends Phaser.Scene {
 
     // Better responsive scaling - use smaller base for mobile
     const isMobile = screenW < 768;
-    const baseWidth = isMobile ? 400 : 800;
-    const baseHeight = isMobile ? 600 : 800;
+    const baseWidth = isMobile ? 360 : 800;
+    const baseHeight = isMobile ? 640 : 800;
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
