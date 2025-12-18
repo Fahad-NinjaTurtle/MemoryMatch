@@ -17,7 +17,7 @@ const dimensions = getGameDimensions();
 // Cap at 4 to avoid performance issues on extremely high DPR devices
 const rawDPR = window.devicePixelRatio || 1;
 const MAX_DPR = 4; // Allow up to 4x for very high-DPI mobile screens
-const dpr = Math.min(rawDPR, MAX_DPR);
+const dpr = Math.min(rawDPR, 1);
 
 const config = {
     // Use WEBGL for better high-DPI rendering (better texture filtering on mobile)
