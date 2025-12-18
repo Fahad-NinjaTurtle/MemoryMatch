@@ -25,11 +25,14 @@ function isMobileDevice() {
   return isMobileUA || isTouchDevice || isMobilePlatform;
 }
 
-// Get window dimensions
+// Get window dimensions - use visual viewport on mobile for accurate sizing
 const getGameDimensions = () => {
+    // On mobile, visualViewport gives more accurate dimensions (excludes browser chrome)
+    // Fallback to window dimensions for desktop
+    const vp = window.visualViewport;
     return {
-        width: window.innerWidth,
-        height: window.innerHeight
+        width: vp ? vp.width : window.innerWidth,
+        height: vp ? vp.height : window.innerHeight
     };
 };
 
@@ -114,14 +117,27 @@ function applyCrispCanvasFix() {
 
     // Verify resolution is set correctly
     const actualResolution = game.config.resolution;
+    const vp = window.visualViewport;
+    const actualWidth = vp ? vp.width : window.innerWidth;
+    const actualHeight = vp ? vp.height : window.innerHeight;
+    
     console.log('Phaser Resolution:', {
         configured: dpr,
         actual: actualResolution,
         canvasWidth: canvas.width,
         canvasHeight: canvas.height,
         cssWidth: canvas.style.width,
-        cssHeight: canvas.style.height
+        cssHeight: canvas.style.height,
+        viewportWidth: actualWidth,
+        viewportHeight: actualHeight,
+        devicePixelRatio: window.devicePixelRatio
     });
+
+    // Ensure canvas is properly sized for mobile viewport
+    // On mobile, visualViewport gives accurate dimensions (excludes browser UI)
+    if (vp && isMobile) {
+        game.scale.resize(actualWidth, actualHeight);
+    }
 
     // For very high DPR devices, ensure canvas is rendering at full resolution
     if (isMobile && rawDPR >= 3.5) {
@@ -145,6 +161,21 @@ window.addEventListener('resize', () => {
     // Re-apply crisp canvas fix on resize
     applyCrispCanvasFix();
 });
+
+// Handle visualViewport resize on mobile (more accurate than window resize)
+// This fires when mobile browser UI shows/hides or orientation changes
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+        const newDimensions = getGameDimensions();
+        game.scale.resize(newDimensions.width, newDimensions.height);
+        applyCrispCanvasFix();
+    });
+    
+    window.visualViewport.addEventListener('scroll', () => {
+        // Ensure canvas stays properly positioned when viewport scrolls
+        applyCrispCanvasFix();
+    });
+}
 
 // Expose game instance for HTML interaction
 window.gameInstance = game;

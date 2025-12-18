@@ -10,10 +10,14 @@
     
     <style>
         /* Minimal CSS for canvas and animations that Tailwind can't handle */
+        /* Let Phaser control canvas sizing - don't force with !important */
         #game-container canvas {
             display: block;
-            width: 100% !important;
-            height: 100% !important;
+            width: 100%;
+            height: 100%;
+            /* Ensure crisp rendering on high-DPI mobile devices */
+            image-rendering: auto;
+            -webkit-font-smoothing: antialiased;
         }
 
         .time-warning #countdown-time {
