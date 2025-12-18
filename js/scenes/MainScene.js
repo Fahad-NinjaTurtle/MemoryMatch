@@ -26,6 +26,7 @@ function isMobileDevice() {
 
 export default class MainScene extends Phaser.Scene {
   preload() {
+    // Load card images with proper settings for high-DPI rendering
     this.load.image("cardBack", "./assets/card-back.png");
     for (let i = 1; i <= 8; i++) {
       this.load.image("cardFront" + i, `./assets/card-front-${i}.png`);
@@ -33,11 +34,6 @@ export default class MainScene extends Phaser.Scene {
     // Load sounds
     this.load.audio("bgMusic", "./sounds/Bg Sound.mp3");
     this.load.audio("flipSound", "./sounds/flipSound.mp3");
-
-    // this.textures.each(texture => {
-    //   texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-    // });
-    
   }
 
   create() {
@@ -57,8 +53,16 @@ export default class MainScene extends Phaser.Scene {
     this.rows = 4;
     this.cols = 4;
 
+    // Apply LINEAR filtering to all card textures for smooth scaling on high-DPI displays
+    // This is critical for crisp rendering on mobile devices with high DPR
     const keys = ["cardBack", ...Array.from({ length: 8 }, (_, i) => `cardFront${i + 1}`)];
-    keys.forEach((k) => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR));
+    keys.forEach((key) => {
+      const texture = this.textures.get(key);
+      if (texture) {
+        // Set LINEAR filtering for smooth scaling (prevents pixelation)
+        texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+      }
+    });
 
     // dynamic card measurements - different sizes for mobile vs desktop
     const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop

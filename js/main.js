@@ -46,20 +46,29 @@ const isMobile = isMobileDevice();
 const dpr = isMobile ? rawDPR : Math.min(rawDPR, 3);
 
 const config = {
-    // AUTO will pick WEBGL when available (better performance), else CANVAS
-    // Crispness is controlled via `resolution` below (do NOT multiply width/height by DPR)
-    type: Phaser.AUTO,
+    // Use WEBGL for better texture filtering and high-DPI support on mobile
+    // WEBGL provides superior scaling and filtering compared to CANVAS
+    // Phaser.AUTO will use WEBGL if available, fallback to CANVAS if not
+    // For mobile devices, we prefer WEBGL for crisp rendering
+    type: Phaser.WEBGL,
     width: dimensions.width,
     height: dimensions.height,
     backgroundColor: "#1d1d1d",
 
     // CRITICAL: Set resolution to DPR for high-DPI rendering
-    // Mobile devices (S21 Ultra, Pixel 7, etc.) often have DPR of 2.5-3.5
-    // Using full DPR on mobile ensures crisp, non-pixelated rendering
-    // Desktop can use lower DPR (capped at 3) for better performance
+    // Mobile devices (S24 Ultra: 3.75, S21 Ultra: 2.65, Pixel 7: 2.5-3) need full DPR
+    // Using full DPR ensures crisp, non-pixelated rendering
     resolution: dpr,
     antialias: true,
     pixelArt: false,
+    
+    // Additional rendering settings for crisp mobile rendering
+    render: {
+        // Ensure textures use proper filtering
+        antialias: true,
+        // Round pixels can cause blurriness on high-DPI, disable it
+        roundPixels: false
+    },
 
     scale: {
         mode: Phaser.Scale.RESIZE,  // Resize to fit container
