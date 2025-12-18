@@ -62,37 +62,118 @@ function ensureCrispCanvas() {
 
 function applyCrispCanvasFix() {
     const canvas = game.canvas;
-    if (!canvas) return;
+    if (!canvas) return false;
 
     // CRITICAL FIX: Manually apply resolution scaling
     // Phaser.Scale.RESIZE mode doesn't always apply resolution correctly
-    // We need to manually set the internal canvas size based on DPR
+    const dpr = config.resolution || window.devicePixelRatio || 1;
+    
+    // Wait for canvas to have valid dimensions
+    const displayWidth = canvas.clientWidth || canvas.offsetWidth;
+    const displayHeight = canvas.clientHeight || canvas.offsetHeight;
+    
+    // Validate dimensions before proceeding
+    if (!displayWidth || !displayHeight || displayWidth <= 0 || displayHeight <= 0 || isNaN(displayWidth) || isNaN(displayHeight)) {
+        return false; // Not ready yet
+    }
+    
+    // Calculate expected internal size
+    const internalWidth = Math.round(displayWidth * dpr);
+    const internalHeight = Math.round(displayHeight * dpr);
+    
+    // Validate calculated sizes
+    if (isNaN(internalWidth) || isNaN(internalHeight) || internalWidth <= 0 || internalHeight <= 0) {
+        return false;
+    }
+    
+    // Force update - Phaser RESIZE mode keeps resetting it
+    if (canvas.width !== internalWidth || canvas.height !== internalHeight) {
+        // Set canvas size directly (this is what matters for rendering)
+        canvas.width = internalWidth;
+        canvas.height = internalHeight;
+        
+        // Update Phaser's renderer viewport to match
+        if (game.renderer && game.renderer.gl) {
+            game.renderer.gl.viewport(0, 0, internalWidth, internalHeight);
+        }
+        
+        console.log('✅ Canvas resolution applied:', dpr.toFixed(3), `(${internalWidth}×${internalHeight} internal, ${displayWidth}×${displayHeight} display)`);
+        return true;
+    }
+    return false;
+}
+
+// Continuously monitor and fix canvas resolution (Phaser RESIZE mode resets it)
+function monitorCanvasResolution() {
+    if (!game || !game.canvas) return;
+    
+    const canvas = game.canvas;
     const dpr = config.resolution || window.devicePixelRatio || 1;
     const displayWidth = canvas.clientWidth || canvas.offsetWidth;
     const displayHeight = canvas.clientHeight || canvas.offsetHeight;
     
-    if (displayWidth && displayHeight) {
-        // Set internal canvas size to match resolution multiplier
-        const internalWidth = Math.round(displayWidth * dpr);
-        const internalHeight = Math.round(displayHeight * dpr);
-        
-        // Only update if different to avoid unnecessary redraws
-        if (canvas.width !== internalWidth || canvas.height !== internalHeight) {
-            canvas.width = internalWidth;
-            canvas.height = internalHeight;
-            
-            // Update Phaser's renderer to match
-            if (game.renderer && game.renderer.resize) {
-                game.renderer.resize(internalWidth, internalHeight);
-            }
-            
-            console.log('✅ Canvas resolution applied:', dpr, `(${internalWidth}×${internalHeight} internal, ${displayWidth}×${displayHeight} display)`);
+    // Validate before checking
+    if (!displayWidth || !displayHeight || displayWidth <= 0 || displayHeight <= 0) {
+        return;
+    }
+    
+    const expectedInternalWidth = Math.round(displayWidth * dpr);
+    const expectedInternalHeight = Math.round(displayHeight * dpr);
+    
+    // If canvas was reset to 1:1 (or wrong size), fix it immediately
+    const currentResolution = canvas.width / displayWidth;
+    if (Math.abs(currentResolution - dpr) > 0.1) {
+        canvas.width = expectedInternalWidth;
+        canvas.height = expectedInternalHeight;
+        if (game.renderer && game.renderer.gl) {
+            game.renderer.gl.viewport(0, 0, expectedInternalWidth, expectedInternalHeight);
         }
     }
 }
 
 // Apply crisp canvas fix after initialization
 ensureCrispCanvas();
+
+// Continuously monitor canvas resolution (Phaser RESIZE mode resets it)
+// Use requestAnimationFrame to check every frame
+let lastCheckTime = 0;
+let fixAttempts = 0;
+const MAX_FIX_ATTEMPTS = 50; // Stop after 50 successful fixes to avoid spam
+
+function checkCanvasResolution() {
+    const now = Date.now();
+    // Check every 50ms (more frequent) to catch Phaser's resets faster
+    if (now - lastCheckTime > 50 && fixAttempts < MAX_FIX_ATTEMPTS) {
+        const fixed = applyCrispCanvasFix();
+        if (fixed) {
+            fixAttempts++;
+        }
+        monitorCanvasResolution();
+        lastCheckTime = now;
+    }
+    requestAnimationFrame(checkCanvasResolution);
+}
+
+// Start monitoring after game is ready
+game.events.once('ready', () => {
+    // Wait for canvas to get proper dimensions, then apply fix with retries
+    let attempts = 0;
+    const tryFix = () => {
+        const fixed = applyCrispCanvasFix();
+        if (!fixed && attempts < 20) {
+            attempts++;
+            setTimeout(tryFix, 50); // Retry every 50ms (faster)
+        } else {
+            // Start continuous monitoring (always start, even if initial fix failed)
+            requestAnimationFrame(checkCanvasResolution);
+        }
+    };
+    
+    // Start trying immediately, then also after a delay
+    setTimeout(tryFix, 100);
+    setTimeout(tryFix, 300);
+    setTimeout(tryFix, 500);
+});
 
 // Handle window resize
 window.addEventListener('resize', () => {
@@ -104,6 +185,13 @@ window.addEventListener('resize', () => {
     setTimeout(() => {
         applyCrispCanvasFix();
     }, 50);
+});
+
+// Also hook into Phaser's resize events
+game.scale.on('resize', () => {
+    setTimeout(() => {
+        applyCrispCanvasFix();
+    }, 10);
 });
 
 // Expose game instance for HTML interaction
