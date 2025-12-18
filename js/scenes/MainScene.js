@@ -54,15 +54,25 @@ export default class MainScene extends Phaser.Scene {
     this.cols = 4;
 
     // Apply LINEAR filtering to all card textures for smooth scaling on high-DPI displays
-    // This is critical for crisp rendering on mobile devices with high DPR
+    // This is critical for crisp rendering on mobile devices with high DPR (especially 3.75+)
     const keys = ["cardBack", ...Array.from({ length: 8 }, (_, i) => `cardFront${i + 1}`)];
+    
     keys.forEach((key) => {
       const texture = this.textures.get(key);
       if (texture) {
         // Set LINEAR filtering for smooth scaling (prevents pixelation)
+        // This ensures textures scale smoothly at any DPR, including 3.75
         texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
       }
     });
+    
+    // For very high DPR devices (3.5+), ensure renderer is configured for quality
+    const rawDPR = window.devicePixelRatio || 1;
+    if (rawDPR >= 3.5 && this.game.renderer && this.game.renderer.gl) {
+      const gl = this.game.renderer.gl;
+      // Ensure WebGL context is using high-quality rendering
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    }
 
     // dynamic card measurements - different sizes for mobile vs desktop
     const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop

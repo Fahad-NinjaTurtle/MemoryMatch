@@ -39,11 +39,20 @@ const dimensions = getGameDimensions();
 const rawDPR = window.devicePixelRatio || 1;
 const isMobile = isMobileDevice();
 
-// Mobile devices: Use full native DPR for crisp rendering (no cap - uses device's actual DPR)
-// Desktop: Cap at 3 for better performance (most desktop displays are 1-2 DPR anyway)
-// This ensures mobile devices like S24 Ultra (3.75), S21 Ultra (2.65), Pixel 7 (2.5-3) 
+// Use full native DPR for all devices - no artificial caps
+// This ensures all devices (mobile and desktop) use their full native resolution
+// Mobile devices like S24 Ultra (3.75), S21 Ultra (2.65), Pixel 7 (2.5-3)
+// Desktop displays (typically 1-2 DPR, but some high-DPI monitors can be higher)
 // all use their full native resolution for perfect clarity
-const dpr = isMobile ? rawDPR : Math.min(rawDPR, 3);
+const dpr = rawDPR;
+
+// Debug logging (remove in production if needed)
+console.log('Device Info:', {
+  isMobile,
+  rawDPR,
+  finalDPR: dpr,
+  screenSize: `${dimensions.width}x${dimensions.height}`
+});
 
 const config = {
     // Use WEBGL for better texture filtering and high-DPI support on mobile
@@ -67,7 +76,11 @@ const config = {
         // Ensure textures use proper filtering
         antialias: true,
         // Round pixels can cause blurriness on high-DPI, disable it
-        roundPixels: false
+        roundPixels: false,
+        // For very high DPR devices, ensure power preference is set for quality
+        powerPreference: "high-performance",
+        // Ensure mipmaps are disabled for crisp rendering at high DPR
+        mipmapFilter: "LINEAR"
     },
 
     scale: {
@@ -99,9 +112,26 @@ function applyCrispCanvasFix() {
     const canvas = game.canvas;
     if (!canvas) return;
 
-    // Phaser handles internal canvas sizing via resolution property
-    // The resolution property in config ensures high-DPI rendering
-    // This function is here for any additional canvas optimizations if needed
+    // Verify resolution is set correctly
+    const actualResolution = game.config.resolution;
+    console.log('Phaser Resolution:', {
+        configured: dpr,
+        actual: actualResolution,
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height,
+        cssWidth: canvas.style.width,
+        cssHeight: canvas.style.height
+    });
+
+    // For very high DPR devices, ensure canvas is rendering at full resolution
+    if (isMobile && rawDPR >= 3.5) {
+        // Force canvas to use full DPR
+        const gl = game.renderer.gl;
+        if (gl) {
+            // Ensure WebGL viewport matches the high DPR
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+    }
 }
 
 // Apply crisp canvas fix after initialization
