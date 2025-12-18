@@ -52,7 +52,7 @@ export default class MainScene extends Phaser.Scene {
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.88; // Reduced padding to fit cards better
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * (isMobile ? 0.88 : 0.9); // Different padding for mobile vs desktop
 
     this.rows = 4;
     this.cols = 4;
@@ -60,11 +60,11 @@ export default class MainScene extends Phaser.Scene {
     const keys = ["cardBack", ...Array.from({ length: 8 }, (_, i) => `cardFront${i + 1}`)];
     keys.forEach((k) => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR));
 
-    // dynamic card measurements - adjusted for better mobile support
-    const baseCardSize = isMobile ? 90 : 90;
-    this.cardSize = baseCardSize * 0.28 * scaleFactor; // Further reduced for smaller cards
-    this.spacing = (isMobile ? 65 : 100) * scaleFactor; // Increased spacing for better visibility
-    this.topExtraSpacing = (isMobile ? 40 : 70) * scaleFactor; // Increased vertical spacing
+    // dynamic card measurements - different sizes for mobile vs desktop
+    const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop
+    this.cardSize = baseCardSize * (isMobile ? 0.28 : 0.5) * scaleFactor; // Larger multiplier for desktop
+    this.spacing = (isMobile ? 65 : 100) * scaleFactor; // More spacing on desktop
+    this.topExtraSpacing = (isMobile ? 40 : 50) * scaleFactor; // More vertical spacing on desktop
 
     // dynamic scale used for both front + back flip
     // Let Phaser handle high-DPI scaling naturally (no clamping needed)
@@ -152,12 +152,12 @@ export default class MainScene extends Phaser.Scene {
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.88;
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * (isMobile ? 0.88 : 0.9);
 
-    const baseCardSize = isMobile ? 90 : 90;
-    const cardSize = baseCardSize * 0.28 * scaleFactor; // Further reduced for smaller cards
-    const spacing = (isMobile ? 65 : 100) * scaleFactor; // Increased spacing for better visibility
-    const topExtraSpacing = (isMobile ? 40 : 70) * scaleFactor; // Increased vertical spacing
+    const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop
+    const cardSize = baseCardSize * (isMobile ? 0.28 : 0.5) * scaleFactor; // Larger multiplier for desktop
+    const spacing = (isMobile ? 65 : 100) * scaleFactor; // More spacing on desktop
+    const topExtraSpacing = (isMobile ? 40 : 50) * scaleFactor; // More vertical spacing on desktop
 
     // Let Phaser handle high-DPI scaling naturally (no clamping needed)
     const cardBackScale = cardSize / 100;
@@ -214,10 +214,11 @@ export default class MainScene extends Phaser.Scene {
     this.timeRemaining = 60;
 
     // Hide start screen
-    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("start-screen").classList.remove("flex");
 
     // Show countdown
-    document.getElementById("countdown").style.display = "block";
+    document.getElementById("countdown").classList.remove("hidden");
     this.updateCountdownDisplay();
 
     // Show and enable all cards with fade-in animation
@@ -313,13 +314,14 @@ export default class MainScene extends Phaser.Scene {
     }
 
     // Hide game end screen
-    document.getElementById("game-end").style.display = "none";
+    document.getElementById("game-end").classList.add("hidden");
 
     // Show start screen (use flex to maintain centering)
-    document.getElementById("start-screen").style.display = "flex";
+    document.getElementById("start-screen").classList.remove("hidden");
+    document.getElementById("start-screen").classList.add("flex");
 
     // Hide countdown
-    document.getElementById("countdown").style.display = "none";
+    document.getElementById("countdown").classList.add("hidden");
     document.getElementById("countdown").classList.remove("time-warning");
 
     // Reset all cards
@@ -521,7 +523,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     // Hide countdown
-    document.getElementById("countdown").style.display = "none";
+    document.getElementById("countdown").classList.add("hidden");
 
     // Show game end screen
     const gameEndEl = document.getElementById("game-end");
@@ -536,6 +538,6 @@ export default class MainScene extends Phaser.Scene {
       endMessage.textContent = `You matched ${this.matchedCards} out of 16 cards.`;
     }
 
-    gameEndEl.style.display = "block";
+    gameEndEl.classList.remove("hidden");
   }
 }

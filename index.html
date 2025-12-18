@@ -2,149 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Memory Game (Phaser)</title>
-
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #222;
-            font-family: Arial, sans-serif;
-        }
-
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-
+        /* Minimal CSS for canvas and animations that Tailwind can't handle */
         #game-container canvas {
             display: block;
             width: 100% !important;
             height: 100% !important;
-        }
-
-        #start-screen {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            text-align: center;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        #start-screen h1 {
-            color: white;
-            margin-bottom: clamp(20px, 4vh, 30px);
-            font-size: clamp(24px, 5vw, 48px);
-        }
-
-        #start-button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: clamp(12px, 2vw, 18px) clamp(30px, 5vw, 50px);
-            font-size: clamp(18px, 4vw, 28px);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-        }
-
-        #start-button:hover {
-            background: #45a049;
-            transform: scale(1.05);
-        }
-
-        #start-button:active {
-            transform: scale(0.95);
-        }
-
-        #countdown {
-            position: absolute;
-            top: clamp(10px, 2vh, 20px);
-            left: clamp(10px, 2vw, 20px);
-            z-index: 100;
-            color: #fff;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            display: none;
-            pointer-events: none;
-        }
-
-        #countdown-label {
-            display: block;
-            font-size: clamp(20px, 4vw, 24px);
-            opacity: 0.8;
-            margin-bottom: 8px;
-        }
-
-        #countdown-time {
-            display: block;
-            font-size: clamp(40px, 8vw, 52px);
-        }
-
-        #game-end {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            text-align: center;
-            display: none;
-            background: rgba(0, 0, 0, 0.95);
-            padding: clamp(20px, 4vw, 40px);
-            border-radius: 10px;
-            color: white;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        #game-end h2 {
-            margin: 0 0 20px 0;
-            font-size: clamp(24px, 5vw, 36px);
-        }
-
-        #game-end p {
-            margin: 10px 0;
-            font-size: clamp(16px, 3vw, 20px);
-        }
-
-        #restart-button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: clamp(10px, 2vw, 14px) clamp(25px, 4vw, 35px);
-            font-size: clamp(16px, 3vw, 20px);
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s, transform 0.1s;
-        }
-
-        #restart-button:hover {
-            background: #45a049;
-            transform: scale(1.05);
-        }
-
-        #restart-button:active {
-            transform: scale(0.95);
         }
 
         .time-warning #countdown-time {
@@ -158,22 +27,38 @@
         }
     </style>
 </head>
-<body>
-    <div id="game-container">
-        <div id="start-screen">
-            <h1 style="color: white; margin-bottom: 20px;">Match Memory Game</h1>
-            <button id="start-button">START GAME</button>
+<body class="m-0 p-0 w-full h-full overflow-hidden bg-gray-800 font-sans">
+    <div id="game-container" class="relative w-screen h-screen overflow-hidden">
+        <!-- Start Screen -->
+        <div id="start-screen" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1000] text-center w-full h-full flex flex-col justify-center items-center bg-black/90">
+            <!-- Logo -->
+            <img src="./assets/logo.png" alt="Game Logo" class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 mb-4 sm:mb-6 md:mb-8 object-contain" />
+            
+            <!-- Title -->
+            <h1 class="text-white mb-4 sm:mb-5 md:mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">Match Memory Game</h1>
+            
+            <!-- Start Button -->
+            <button id="start-button" class="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white border-none px-8 sm:px-12 md:px-16 py-3 sm:py-4 md:py-5 text-lg sm:text-xl md:text-2xl lg:text-3xl rounded-lg cursor-pointer transition-all duration-300 active:scale-95 hover:scale-105">
+                START GAME
+            </button>
         </div>
-        <div id="countdown">
-            <span id="countdown-label">Time Remaining</span>
-            <span id="countdown-time">01:00</span>
+
+        <!-- Countdown Timer -->
+        <div id="countdown" class="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4 z-[100] text-white font-bold drop-shadow-lg hidden pointer-events-none">
+            <span id="countdown-label" class="block text-sm sm:text-base md:text-lg lg:text-xl opacity-80 mb-1 sm:mb-2">Time Remaining</span>
+            <span id="countdown-time" class="block text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">01:00</span>
         </div>
-        <div id="game-end">
-            <h2 id="end-title">Game Over!</h2>
-            <p id="end-message"></p>
-            <button id="restart-button">Play Again</button>
+
+        <!-- Game End Screen -->
+        <div id="game-end" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1000] text-center hidden bg-black/95 p-6 sm:p-8 md:p-10 rounded-lg text-white w-[90%] max-w-md sm:max-w-lg md:max-w-xl">
+            <h2 id="end-title" class="m-0 mb-4 sm:mb-5 md:mb-6 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Game Over!</h2>
+            <p id="end-message" class="my-2 sm:my-3 text-base sm:text-lg md:text-xl lg:text-2xl"></p>
+            <button id="restart-button" class="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white border-none px-6 sm:px-8 md:px-10 py-2 sm:py-3 md:py-4 text-base sm:text-lg md:text-xl lg:text-2xl rounded-lg cursor-pointer mt-4 sm:mt-5 md:mt-6 transition-all duration-300 active:scale-95 hover:scale-105">
+                Play Again
+            </button>
         </div>
     </div>
+    
     <!-- Phaser from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
     <script type="module" src="./js/main.js"></script>
