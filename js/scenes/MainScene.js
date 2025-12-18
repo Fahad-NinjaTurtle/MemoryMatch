@@ -41,20 +41,20 @@ export default class MainScene extends Phaser.Scene {
     const screenW = this.scale.gameSize.width;
     const screenH = this.scale.gameSize.height;
 
-    // Better responsive scaling - detect mobile device properly
-    const isMobile = isMobileDevice();
-    const baseWidth = isMobile ? 400 : 800;
-    const baseHeight = isMobile ? 700 : 800;
+    // Generic responsive scaling - works for all devices based on actual screen size
+    // Use a unified base size that adapts to screen dimensions
+    const baseWidth = 800;
+    const baseHeight = 800;
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * (isMobile ? 0.88 : 0.9); // Different padding for mobile vs desktop
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9; // Unified padding for all devices
 
     this.rows = 4;
     this.cols = 4;
 
     // Apply LINEAR filtering to all card textures for smooth scaling on high-DPI displays
-    // This is critical for crisp rendering on mobile devices with high DPR (especially 3.75+)
+    // This is critical for crisp rendering on all devices, especially high DPR (3.75+)
     const keys = ["cardBack", ...Array.from({ length: 8 }, (_, i) => `cardFront${i + 1}`)];
     
     keys.forEach((key) => {
@@ -74,11 +74,11 @@ export default class MainScene extends Phaser.Scene {
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     }
 
-    // dynamic card measurements - different sizes for mobile vs desktop
-    const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop
-    this.cardSize = baseCardSize * (isMobile ? 0.28 : 0.5) * scaleFactor; // Larger multiplier for desktop
-    this.spacing = (isMobile ? 65 : 100) * scaleFactor; // More spacing on desktop
-    this.topExtraSpacing = (isMobile ? 40 : 50) * scaleFactor; // More vertical spacing on desktop
+    // Generic card measurements - unified approach for all devices
+    const baseCardSize = 90;
+    this.cardSize = baseCardSize * 0.4 * scaleFactor; // Unified multiplier
+    this.spacing = 80 * scaleFactor; // Unified spacing
+    this.topExtraSpacing = 50 * scaleFactor; // Unified vertical spacing
 
     // dynamic scale used for both front + back flip
     // Let Phaser handle high-DPI scaling naturally (no clamping needed)
@@ -156,22 +156,23 @@ export default class MainScene extends Phaser.Scene {
   }
 
   handleResize() {
-    // Recalculate positions on resize
+    // Recalculate positions on resize - generic approach for all devices
     const screenW = this.scale.gameSize.width;
     const screenH = this.scale.gameSize.height;
 
-    const isMobile = isMobileDevice();
-    const baseWidth = isMobile ? 400 : 800;
-    const baseHeight = isMobile ? 700 : 800;
+    // Generic responsive scaling - unified for all devices
+    const baseWidth = 800;
+    const baseHeight = 800;
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * (isMobile ? 0.88 : 0.9);
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
 
-    const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop
-    const cardSize = baseCardSize * (isMobile ? 0.28 : 0.5) * scaleFactor; // Larger multiplier for desktop
-    const spacing = (isMobile ? 65 : 100) * scaleFactor; // More spacing on desktop
-    const topExtraSpacing = (isMobile ? 40 : 50) * scaleFactor; // More vertical spacing on desktop
+    // Generic card measurements - unified approach
+    const baseCardSize = 90;
+    const cardSize = baseCardSize * 0.4 * scaleFactor; // Unified multiplier
+    const spacing = 80 * scaleFactor; // Unified spacing
+    const topExtraSpacing = 50 * scaleFactor; // Unified vertical spacing
 
     // Let Phaser handle high-DPI scaling naturally (no clamping needed)
     const cardBackScale = cardSize / 100;
