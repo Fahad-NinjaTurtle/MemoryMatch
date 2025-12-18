@@ -86,19 +86,47 @@ window.gameInstance = game;
 
 // Debug: Log renderer type to verify WebGL is being used
 game.events.once('ready', () => {
-  const rendererType = game.renderer ? game.renderer.type : 'N/A';
+  // Check what renderer AUTO actually chose
+  const actualRenderer = game.renderer;
+  const rendererType = actualRenderer ? actualRenderer.type : 'N/A';
+  
   let rendererName = 'UNKNOWN';
   if (rendererType === Phaser.WEBGL || rendererType === 1) {
-    rendererName = 'WEBGL';
+    rendererName = 'WEBGL ✅';
   } else if (rendererType === Phaser.CANVAS || rendererType === 0) {
-    rendererName = 'CANVAS';
+    rendererName = 'CANVAS ⚠️';
   } else if (rendererType === Phaser.AUTO || rendererType === 2) {
-    rendererName = 'AUTO';
+    // AUTO means it will try WEBGL first - check what it actually used
+    const gl = actualRenderer.gl;
+    rendererName = gl ? 'WEBGL ✅ (via AUTO)' : 'CANVAS ⚠️ (via AUTO)';
   }
   
-  console.log('Phaser Renderer:', rendererName, `(type: ${rendererType})`);
+  // Check actual canvas resolution (this is what matters for rendering)
+  const canvas = game.canvas;
+  const canvasWidth = canvas ? canvas.width : 'N/A';
+  const canvasHeight = canvas ? canvas.height : 'N/A';
+  const canvasStyleWidth = canvas ? canvas.style.width : 'N/A';
+  const canvasStyleHeight = canvas ? canvas.style.height : 'N/A';
+  
+  // Calculate actual resolution being used
+  const actualResolution = canvas && canvasStyleWidth !== 'N/A' 
+    ? canvasWidth / parseFloat(canvasStyleWidth) 
+    : 'N/A';
+  
+  console.log('=== Phaser Rendering Info ===');
+  console.log('Config Renderer Type:', config.type === Phaser.AUTO ? 'AUTO (2)' : config.type);
+  console.log('Actual Renderer:', rendererName, `(type: ${rendererType})`);
   console.log('Device Pixel Ratio:', window.devicePixelRatio);
-  console.log('Phaser Resolution (config):', config.resolution);
-  console.log('Phaser Resolution (game):', game.config ? game.config.resolution : 'N/A');
+  console.log('Config Resolution:', config.resolution, '(this is what we set)');
+  console.log('Canvas Resolution:', actualResolution, '(actual resolution being used)');
+  console.log('Canvas Size:', `${canvasWidth}×${canvasHeight} (internal)`);
+  console.log('Canvas Display:', `${canvasStyleWidth}×${canvasStyleHeight} (CSS)`);
   console.log('Round Pixels:', config.roundPixels);
+  console.log('Antialias:', config.antialias);
+  console.log('===========================');
+  
+  // Warn if resolution doesn't match DPR
+  if (actualResolution !== 'N/A' && Math.abs(actualResolution - config.resolution) > 0.1) {
+    console.warn('⚠️ Resolution mismatch! Config:', config.resolution, 'Actual:', actualResolution);
+  }
 });
