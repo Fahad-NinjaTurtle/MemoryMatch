@@ -86,7 +86,19 @@ window.gameInstance = game;
 
 // Debug: Log renderer type to verify WebGL is being used
 game.events.once('ready', () => {
-  console.log('Phaser Renderer:', game.renderer.type === 1 ? 'WEBGL' : game.renderer.type === 0 ? 'CANVAS' : 'UNKNOWN');
+  const rendererType = game.renderer ? game.renderer.type : 'N/A';
+  let rendererName = 'UNKNOWN';
+  if (rendererType === Phaser.WEBGL || rendererType === 1) {
+    rendererName = 'WEBGL';
+  } else if (rendererType === Phaser.CANVAS || rendererType === 0) {
+    rendererName = 'CANVAS';
+  } else if (rendererType === Phaser.AUTO || rendererType === 2) {
+    rendererName = 'AUTO';
+  }
+  
+  console.log('Phaser Renderer:', rendererName, `(type: ${rendererType})`);
   console.log('Device Pixel Ratio:', window.devicePixelRatio);
-  console.log('Phaser Resolution:', game.config.resolution);
+  console.log('Phaser Resolution (config):', config.resolution);
+  console.log('Phaser Resolution (game):', game.config ? game.config.resolution : 'N/A');
+  console.log('Round Pixels:', config.roundPixels);
 });
