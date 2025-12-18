@@ -68,9 +68,14 @@ function applyCrispCanvasFix() {
     // Phaser.Scale.RESIZE mode doesn't always apply resolution correctly
     const dpr = config.resolution || window.devicePixelRatio || 1;
     
-    // Wait for canvas to have valid dimensions
-    const displayWidth = canvas.clientWidth || canvas.offsetWidth;
-    const displayHeight = canvas.clientHeight || canvas.offsetHeight;
+    // Get container size (game-container) to ensure full screen
+    const container = document.getElementById('game-container');
+    const containerWidth = container ? container.clientWidth : window.innerWidth;
+    const containerHeight = container ? container.clientHeight : window.innerHeight;
+    
+    // Use container size or canvas display size, whichever is available
+    const displayWidth = containerWidth || canvas.clientWidth || canvas.offsetWidth || window.innerWidth;
+    const displayHeight = containerHeight || canvas.clientHeight || canvas.offsetHeight || window.innerHeight;
     
     // Validate dimensions before proceeding
     if (!displayWidth || !displayHeight || displayWidth <= 0 || displayHeight <= 0 || isNaN(displayWidth) || isNaN(displayHeight)) {
@@ -87,14 +92,28 @@ function applyCrispCanvasFix() {
     }
     
     // Force update - Phaser RESIZE mode keeps resetting it
-    if (canvas.width !== internalWidth || canvas.height !== internalHeight) {
-        // Set canvas size directly (this is what matters for rendering)
+    if (canvas.width !== internalWidth || canvas.height !== internalHeight || 
+        canvas.style.width !== (displayWidth + 'px') || canvas.style.height !== (displayHeight + 'px')) {
+        // Set canvas internal size (for high-DPI rendering)
         canvas.width = internalWidth;
         canvas.height = internalHeight;
+        
+        // CRITICAL: Ensure canvas CSS size fills the container
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+        canvas.style.display = 'block';
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
         
         // Update Phaser's renderer viewport to match
         if (game.renderer && game.renderer.gl) {
             game.renderer.gl.viewport(0, 0, internalWidth, internalHeight);
+        }
+        
+        // Update Phaser scale manager to match display size
+        if (game.scale) {
+            game.scale.setGameSize(displayWidth, displayHeight);
         }
         
         console.log('✅ Canvas resolution applied:', dpr.toFixed(3), `(${internalWidth}×${internalHeight} internal, ${displayWidth}×${displayHeight} display)`);
@@ -109,8 +128,14 @@ function monitorCanvasResolution() {
     
     const canvas = game.canvas;
     const dpr = config.resolution || window.devicePixelRatio || 1;
-    const displayWidth = canvas.clientWidth || canvas.offsetWidth;
-    const displayHeight = canvas.clientHeight || canvas.offsetHeight;
+    
+    // Get container size to ensure full screen
+    const container = document.getElementById('game-container');
+    const containerWidth = container ? container.clientWidth : window.innerWidth;
+    const containerHeight = container ? container.clientHeight : window.innerHeight;
+    
+    const displayWidth = containerWidth || canvas.clientWidth || canvas.offsetWidth || window.innerWidth;
+    const displayHeight = containerHeight || canvas.clientHeight || canvas.offsetHeight || window.innerHeight;
     
     // Validate before checking
     if (!displayWidth || !displayHeight || displayWidth <= 0 || displayHeight <= 0) {
@@ -120,11 +145,20 @@ function monitorCanvasResolution() {
     const expectedInternalWidth = Math.round(displayWidth * dpr);
     const expectedInternalHeight = Math.round(displayHeight * dpr);
     
-    // If canvas was reset to 1:1 (or wrong size), fix it immediately
-    const currentResolution = canvas.width / displayWidth;
-    if (Math.abs(currentResolution - dpr) > 0.1) {
+    // Check if canvas needs fixing (wrong resolution OR wrong display size)
+    const currentResolution = displayWidth > 0 ? canvas.width / displayWidth : 1;
+    const needsSizeFix = canvas.style.width !== (displayWidth + 'px') || canvas.style.height !== (displayHeight + 'px');
+    
+    if (Math.abs(currentResolution - dpr) > 0.1 || needsSizeFix) {
         canvas.width = expectedInternalWidth;
         canvas.height = expectedInternalHeight;
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+        canvas.style.display = 'block';
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        
         if (game.renderer && game.renderer.gl) {
             game.renderer.gl.viewport(0, 0, expectedInternalWidth, expectedInternalHeight);
         }
