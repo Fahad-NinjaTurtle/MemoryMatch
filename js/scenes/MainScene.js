@@ -74,16 +74,21 @@ export default class MainScene extends Phaser.Scene {
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     }
 
-    // Generic card measurements - unified approach for all devices
-    const baseCardSize = 90;
-    this.cardSize = baseCardSize * 0.4 * scaleFactor; // Unified multiplier
-    this.spacing = 80 * scaleFactor; // Unified spacing
-    this.topExtraSpacing = 50 * scaleFactor; // Unified vertical spacing
+    // Card measurements optimized for actual image size (500×726 px)
+    // Target CSS size: ~130×190 px for perfect rendering on S24 Ultra (DPR 3.75)
+    // This ensures no upscaling beyond native image resolution
+    const baseCardSize = 130; // Target CSS width in pixels
+    this.cardSize = baseCardSize * scaleFactor; // Scale based on screen size
+    this.spacing = 20 * scaleFactor; // Reduced spacing to fit cards better
+    this.topExtraSpacing = 15 * scaleFactor; // Reduced vertical spacing
 
-    // dynamic scale used for both front + back flip
-    // Let Phaser handle high-DPI scaling naturally (no clamping needed)
-    this.cardBackScale = this.cardSize / 100;
-    this.cardFrontScale = (this.cardSize / 100) * 0.62; 
+    // Calculate scale factors based on actual image dimensions (500×726 px)
+    // cardBackScale = desired CSS width / image width = 130 / 500 = 0.26
+    // But we use cardSize which already accounts for scaleFactor, so adjust accordingly
+    const targetImageWidth = 500; // Actual card image width in pixels
+    const targetCSSWidth = 130; // Desired CSS width for optimal quality
+    this.cardBackScale = (targetCSSWidth / targetImageWidth) * (this.cardSize / baseCardSize);
+    this.cardFrontScale = this.cardBackScale * 0.62; // Front cards slightly smaller 
 
     // center grid horizontally
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
@@ -168,15 +173,18 @@ export default class MainScene extends Phaser.Scene {
     const scaleFactorH = screenH / baseHeight;
     const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
 
-    // Generic card measurements - unified approach
-    const baseCardSize = 90;
-    const cardSize = baseCardSize * 0.4 * scaleFactor; // Unified multiplier
-    const spacing = 80 * scaleFactor; // Unified spacing
-    const topExtraSpacing = 50 * scaleFactor; // Unified vertical spacing
+    // Card measurements optimized for actual image size (500×726 px)
+    // Target CSS size: ~130×190 px for perfect rendering on S24 Ultra (DPR 3.75)
+    const baseCardSize = 130; // Target CSS width in pixels
+    const cardSize = baseCardSize * scaleFactor; // Scale based on screen size
+    const spacing = 20 * scaleFactor; // Reduced spacing to fit cards better
+    const topExtraSpacing = 15 * scaleFactor; // Reduced vertical spacing
 
-    // Let Phaser handle high-DPI scaling naturally (no clamping needed)
-    const cardBackScale = cardSize / 100;
-    const cardFrontScale = (cardSize / 100) * 0.62;
+    // Calculate scale factors based on actual image dimensions (500×726 px)
+    const targetImageWidth = 500; // Actual card image width in pixels
+    const targetCSSWidth = 130; // Desired CSS width for optimal quality
+    const cardBackScale = (targetCSSWidth / targetImageWidth) * (cardSize / baseCardSize);
+    const cardFrontScale = cardBackScale * 0.62; // Front cards slightly smaller
 
     // Center grid horizontally
     const totalGridWidth = (this.cols - 1) * (cardSize + spacing);
