@@ -198,12 +198,81 @@ export default class MainScene extends Phaser.Scene {
     const restartButton = document.getElementById("restart-button");
 
     startButton.addEventListener("click", () => {
-      this.startGame();
+      this.handleStartButtonClick();
     });
 
     restartButton.addEventListener("click", () => {
       this.restartGame();
     });
+  }
+
+  handleStartButtonClick() {
+    // Check if Phaser and game instance are ready
+    if (typeof Phaser === 'undefined' || !window.gameInstance) {
+      this.showLoading();
+      this.waitForPhaser();
+      return;
+    }
+
+    // Check if game is booted and ready
+    if (!window.gameInstance.isBooted) {
+      this.showLoading();
+      window.gameInstance.events.once('ready', () => {
+        this.hideLoading();
+        this.startGame();
+      });
+      return;
+    }
+
+    // Everything is ready, start the game
+    this.startGame();
+  }
+
+  showLoading() {
+    const button = document.getElementById("start-button");
+    const buttonText = document.getElementById("start-button-text");
+    const buttonLoading = document.getElementById("start-button-loading");
+    
+    if (buttonText) buttonText.classList.add("hidden");
+    if (buttonLoading) buttonLoading.classList.remove("hidden");
+    if (button) button.disabled = true;
+  }
+
+  hideLoading() {
+    const button = document.getElementById("start-button");
+    const buttonText = document.getElementById("start-button-text");
+    const buttonLoading = document.getElementById("start-button-loading");
+    
+    if (buttonText) buttonText.classList.remove("hidden");
+    if (buttonLoading) buttonLoading.classList.add("hidden");
+    if (button) button.disabled = false;
+  }
+
+  waitForPhaser() {
+    // Check every 100ms if Phaser is loaded
+    const checkInterval = setInterval(() => {
+      if (typeof Phaser !== 'undefined' && window.gameInstance) {
+        clearInterval(checkInterval);
+        
+        // Wait for game to boot
+        if (window.gameInstance.isBooted) {
+          this.hideLoading();
+          this.startGame();
+        } else {
+          window.gameInstance.events.once('ready', () => {
+            this.hideLoading();
+            this.startGame();
+          });
+        }
+      }
+    }, 100);
+
+    // Timeout after 10 seconds
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      this.hideLoading();
+      alert('Failed to load game. Please refresh the page.');
+    }, 10000);
   }
 
   startGame() {
