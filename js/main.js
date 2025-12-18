@@ -64,9 +64,31 @@ function applyCrispCanvasFix() {
     const canvas = game.canvas;
     if (!canvas) return;
 
-    // Phaser handles internal canvas sizing via resolution property
-    // The resolution property in config ensures high-DPI rendering
-    // This function is here for any additional canvas optimizations if needed
+    // CRITICAL FIX: Manually apply resolution scaling
+    // Phaser.Scale.RESIZE mode doesn't always apply resolution correctly
+    // We need to manually set the internal canvas size based on DPR
+    const dpr = config.resolution || window.devicePixelRatio || 1;
+    const displayWidth = canvas.clientWidth || canvas.offsetWidth;
+    const displayHeight = canvas.clientHeight || canvas.offsetHeight;
+    
+    if (displayWidth && displayHeight) {
+        // Set internal canvas size to match resolution multiplier
+        const internalWidth = Math.round(displayWidth * dpr);
+        const internalHeight = Math.round(displayHeight * dpr);
+        
+        // Only update if different to avoid unnecessary redraws
+        if (canvas.width !== internalWidth || canvas.height !== internalHeight) {
+            canvas.width = internalWidth;
+            canvas.height = internalHeight;
+            
+            // Update Phaser's renderer to match
+            if (game.renderer && game.renderer.resize) {
+                game.renderer.resize(internalWidth, internalHeight);
+            }
+            
+            console.log('✅ Canvas resolution applied:', dpr, `(${internalWidth}×${internalHeight} internal, ${displayWidth}×${displayHeight} display)`);
+        }
+    }
 }
 
 // Apply crisp canvas fix after initialization
@@ -77,8 +99,11 @@ window.addEventListener('resize', () => {
     const newDimensions = getGameDimensions();
     game.scale.resize(newDimensions.width, newDimensions.height);
     
-    // Re-apply crisp canvas fix on resize
-    applyCrispCanvasFix();
+    // Re-apply crisp canvas fix on resize (critical for maintaining resolution)
+    // Use a small delay to ensure Phaser has updated its internal state
+    setTimeout(() => {
+        applyCrispCanvasFix();
+    }, 50);
 });
 
 // Expose game instance for HTML interaction

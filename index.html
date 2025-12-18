@@ -12,8 +12,9 @@
         /* Minimal CSS for canvas and animations that Tailwind can't handle */
         #game-container canvas {
             display: block;
-            width: 100% !important;
-            height: 100% !important;
+            /* Let Phaser control canvas sizing for proper resolution scaling */
+            width: 100%;
+            height: 100%;
         }
 
         .time-warning #countdown-time {
