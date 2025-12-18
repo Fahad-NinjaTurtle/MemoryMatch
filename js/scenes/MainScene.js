@@ -26,7 +26,6 @@ function isMobileDevice() {
 
 export default class MainScene extends Phaser.Scene {
   preload() {
-    // Load card images with proper settings for high-DPI rendering
     this.load.image("cardBack", "./assets/card-back.png");
     for (let i = 1; i <= 8; i++) {
       this.load.image("cardFront" + i, `./assets/card-front-${i}.png`);
@@ -34,6 +33,11 @@ export default class MainScene extends Phaser.Scene {
     // Load sounds
     this.load.audio("bgMusic", "./sounds/Bg Sound.mp3");
     this.load.audio("flipSound", "./sounds/flipSound.mp3");
+
+    // this.textures.each(texture => {
+    //   texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    // });
+    
   }
 
   create() {
@@ -41,54 +45,31 @@ export default class MainScene extends Phaser.Scene {
     const screenW = this.scale.gameSize.width;
     const screenH = this.scale.gameSize.height;
 
-    // Generic responsive scaling - works for all devices based on actual screen size
-    // Use a unified base size that adapts to screen dimensions
-    const baseWidth = 800;
-    const baseHeight = 800;
+    // Better responsive scaling - detect mobile device properly
+    const isMobile = isMobileDevice();
+    const baseWidth = isMobile ? 400 : 800;
+    const baseHeight = isMobile ? 700 : 800;
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9; // Unified padding for all devices
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * (isMobile ? 0.88 : 0.9); // Different padding for mobile vs desktop
 
     this.rows = 4;
     this.cols = 4;
 
-    // Apply LINEAR filtering to all card textures for smooth scaling on high-DPI displays
-    // This is critical for crisp rendering on all devices, especially high DPR (3.75+)
     const keys = ["cardBack", ...Array.from({ length: 8 }, (_, i) => `cardFront${i + 1}`)];
-    
-    keys.forEach((key) => {
-      const texture = this.textures.get(key);
-      if (texture) {
-        // Set LINEAR filtering for smooth scaling (prevents pixelation)
-        // This ensures textures scale smoothly at any DPR, including 3.75
-        texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-      }
-    });
-    
-    // For very high DPR devices (3.5+), ensure renderer is configured for quality
-    const rawDPR = window.devicePixelRatio || 1;
-    if (rawDPR >= 3.5 && this.game.renderer && this.game.renderer.gl) {
-      const gl = this.game.renderer.gl;
-      // Ensure WebGL context is using high-quality rendering
-      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    }
+    keys.forEach((k) => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR));
 
-    // Card measurements optimized for actual image size (500×726 px)
-    // Target CSS size: ~130×190 px for perfect rendering on S24 Ultra (DPR 3.75)
-    // This ensures no upscaling beyond native image resolution
-    const baseCardSize = 130; // Target CSS width in pixels
-    this.cardSize = baseCardSize * scaleFactor; // Scale based on screen size
-    this.spacing = 20 * scaleFactor; // Reduced spacing to fit cards better
-    this.topExtraSpacing = 15 * scaleFactor; // Reduced vertical spacing
+    // dynamic card measurements - different sizes for mobile vs desktop
+    const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop
+    this.cardSize = baseCardSize * (isMobile ? 0.28 : 0.5) * scaleFactor; // Larger multiplier for desktop
+    this.spacing = (isMobile ? 65 : 100) * scaleFactor; // More spacing on desktop
+    this.topExtraSpacing = (isMobile ? 40 : 50) * scaleFactor; // More vertical spacing on desktop
 
-    // Calculate scale factors based on actual image dimensions (500×726 px)
-    // cardBackScale = desired CSS width / image width = 130 / 500 = 0.26
-    // But we use cardSize which already accounts for scaleFactor, so adjust accordingly
-    const targetImageWidth = 500; // Actual card image width in pixels
-    const targetCSSWidth = 130; // Desired CSS width for optimal quality
-    this.cardBackScale = (targetCSSWidth / targetImageWidth) * (this.cardSize / baseCardSize);
-    this.cardFrontScale = this.cardBackScale * 0.62; // Front cards slightly smaller 
+    // dynamic scale used for both front + back flip
+    // Let Phaser handle high-DPI scaling naturally (no clamping needed)
+    this.cardBackScale = this.cardSize / 100;
+    this.cardFrontScale = (this.cardSize / 100) * 0.62; 
 
     // center grid horizontally
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
@@ -161,30 +142,26 @@ export default class MainScene extends Phaser.Scene {
   }
 
   handleResize() {
-    // Recalculate positions on resize - generic approach for all devices
+    // Recalculate positions on resize
     const screenW = this.scale.gameSize.width;
     const screenH = this.scale.gameSize.height;
 
-    // Generic responsive scaling - unified for all devices
-    const baseWidth = 800;
-    const baseHeight = 800;
+    const isMobile = isMobileDevice();
+    const baseWidth = isMobile ? 400 : 800;
+    const baseHeight = isMobile ? 700 : 800;
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * (isMobile ? 0.88 : 0.9);
 
-    // Card measurements optimized for actual image size (500×726 px)
-    // Target CSS size: ~130×190 px for perfect rendering on S24 Ultra (DPR 3.75)
-    const baseCardSize = 130; // Target CSS width in pixels
-    const cardSize = baseCardSize * scaleFactor; // Scale based on screen size
-    const spacing = 20 * scaleFactor; // Reduced spacing to fit cards better
-    const topExtraSpacing = 15 * scaleFactor; // Reduced vertical spacing
+    const baseCardSize = isMobile ? 90 : 80; // Larger base for desktop
+    const cardSize = baseCardSize * (isMobile ? 0.28 : 0.5) * scaleFactor; // Larger multiplier for desktop
+    const spacing = (isMobile ? 65 : 100) * scaleFactor; // More spacing on desktop
+    const topExtraSpacing = (isMobile ? 40 : 50) * scaleFactor; // More vertical spacing on desktop
 
-    // Calculate scale factors based on actual image dimensions (500×726 px)
-    const targetImageWidth = 500; // Actual card image width in pixels
-    const targetCSSWidth = 130; // Desired CSS width for optimal quality
-    const cardBackScale = (targetCSSWidth / targetImageWidth) * (cardSize / baseCardSize);
-    const cardFrontScale = cardBackScale * 0.62; // Front cards slightly smaller
+    // Let Phaser handle high-DPI scaling naturally (no clamping needed)
+    const cardBackScale = cardSize / 100;
+    const cardFrontScale = (cardSize / 100) * 0.62;
 
     // Center grid horizontally
     const totalGridWidth = (this.cols - 1) * (cardSize + spacing);
