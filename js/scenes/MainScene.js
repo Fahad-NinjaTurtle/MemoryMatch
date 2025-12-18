@@ -53,7 +53,22 @@ export default class MainScene extends Phaser.Scene {
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
     const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * (isMobile ? 0.88 : 0.9); // Different padding for mobile vs desktop
+    const cam = this.cameras.main;
 
+    // Reset camera completely
+    cam.setScroll(0, 0);
+    cam.setZoom(1);
+    cam.setRotation(0);
+    cam.setOrigin(0, 0);
+    
+    // Force camera to exact game size
+    cam.setViewport(
+      0,
+      0,
+      this.scale.gameSize.width,
+      this.scale.gameSize.height
+    );
+    
     this.rows = 4;
     this.cols = 4;
 
@@ -140,7 +155,14 @@ export default class MainScene extends Phaser.Scene {
     this.setupHTMLElements();
 
     // Handle window resize
-    this.scale.on("resize", this.handleResize, this);
+    // this.scale.on("resize", this.handleResize, this);
+    this.scale.on('resize', (gameSize) => {
+      const { width, height } = gameSize;
+    
+      const cam = this.cameras.main;
+      cam.setViewport(0, 0, width, height);
+    });
+    
   }
 
   handleResize() {
