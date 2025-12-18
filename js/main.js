@@ -17,12 +17,12 @@ const dimensions = getGameDimensions();
 // Cap at 4 to avoid performance issues on extremely high DPR devices
 const rawDPR = window.devicePixelRatio || 1;
 const MAX_DPR = 4; // Allow up to 4x for very high-DPI mobile screens
-const dpr = Math.min(rawDPR, 1);
+const dpr = Math.min(rawDPR, MAX_DPR);
 
 const config = {
-    // Use WEBGL for better high-DPI rendering (better texture filtering on mobile)
-    // AUTO will use WEBGL if available, CANVAS otherwise (WEBGL preferred for quality)
-    type: Phaser.WEBGL, // Force WEBGL for crisp rendering (Phaser handles fallback if unavailable)
+    // AUTO tries WEBGL first (better quality), falls back to CANVAS if unavailable
+    // WEBGL provides better texture filtering and scaling on mobile devices
+    type: Phaser.AUTO, // AUTO ensures compatibility while preferring WEBGL for quality
     width: dimensions.width,
     height: dimensions.height,
     backgroundColor: "#1d1d1d",
@@ -33,6 +33,7 @@ const config = {
     resolution: dpr,
     antialias: true,
     pixelArt: false, // false = smooth scaling, true = pixel-perfect (causes pixelation)
+    roundPixels: true, // Force integer pixel positions - prevents blur on mobile from fractional pixels
 
     scale: {
         mode: Phaser.Scale.RESIZE,  // Resize to fit container
@@ -82,3 +83,10 @@ window.addEventListener('resize', () => {
 
 // Expose game instance for HTML interaction
 window.gameInstance = game;
+
+// Debug: Log renderer type to verify WebGL is being used
+game.events.once('ready', () => {
+  console.log('Phaser Renderer:', game.renderer.type === 1 ? 'WEBGL' : game.renderer.type === 0 ? 'CANVAS' : 'UNKNOWN');
+  console.log('Device Pixel Ratio:', window.devicePixelRatio);
+  console.log('Phaser Resolution:', game.config.resolution);
+});

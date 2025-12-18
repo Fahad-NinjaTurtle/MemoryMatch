@@ -71,15 +71,15 @@ export default class MainScene extends Phaser.Scene {
     this.cardBackScale = this.cardSize / 100;
     this.cardFrontScale = (this.cardSize / 100) * 0.62; 
 
-    // center grid horizontally
+    // center grid horizontally - round to prevent fractional pixel positions (causes blur on mobile)
     const totalGridWidth = (this.cols - 1) * (this.cardSize + this.spacing);
-    this.startX = screenW / 2 - totalGridWidth / 2;
+    this.startX = Math.round(screenW / 2 - totalGridWidth / 2);
 
-    // center grid vertically (both mobile and PC)
+    // center grid vertically - round to prevent fractional pixel positions
     const totalGridHeight =
       (this.rows - 1) * (this.cardSize + this.spacing + this.topExtraSpacing) +
       this.cardSize;
-    this.startY = screenH / 2 - totalGridHeight / 2;
+    this.startY = Math.round(screenH / 2 - totalGridHeight / 2);
 
     this.cardData = [];
     this.cardIndex = 0;
@@ -104,10 +104,12 @@ export default class MainScene extends Phaser.Scene {
       this.cardData[i] = [];
 
       for (let j = 0; j < this.cols; j++) {
-        const x = this.startX + (this.cardSize + this.spacing) * j;
-        const y =
+        // Round positions to integers to prevent fractional pixel rendering (causes blur on mobile)
+        const x = Math.round(this.startX + (this.cardSize + this.spacing) * j);
+        const y = Math.round(
           this.startY +
-          (this.cardSize + this.spacing + this.topExtraSpacing) * i;
+          (this.cardSize + this.spacing + this.topExtraSpacing) * i
+        );
 
         const card = this.add
           .image(x, y, "cardBack")
@@ -163,21 +165,21 @@ export default class MainScene extends Phaser.Scene {
     const cardBackScale = cardSize / 100;
     const cardFrontScale = (cardSize / 100) * 0.62;
 
-    // Center grid horizontally
+    // Center grid horizontally - round to prevent fractional pixel positions
     const totalGridWidth = (this.cols - 1) * (cardSize + spacing);
-    const startX = screenW / 2 - totalGridWidth / 2;
+    const startX = Math.round(screenW / 2 - totalGridWidth / 2);
 
-    // Center grid vertically
+    // Center grid vertically - round to prevent fractional pixel positions
     const totalGridHeight =
       (this.rows - 1) * (cardSize + spacing + topExtraSpacing) + cardSize;
-    const startY = screenH / 2 - totalGridHeight / 2;
+    const startY = Math.round(screenH / 2 - totalGridHeight / 2);
 
-    // Update card positions and scales
+    // Update card positions and scales - round to integers for crisp rendering
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {
         const card = this.cardData[i][j];
-        const x = startX + (cardSize + spacing) * j;
-        const y = startY + (cardSize + spacing + topExtraSpacing) * i;
+        const x = Math.round(startX + (cardSize + spacing) * j);
+        const y = Math.round(startY + (cardSize + spacing + topExtraSpacing) * i);
 
         card.setPosition(x, y);
 
