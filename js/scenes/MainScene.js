@@ -1,5 +1,29 @@
 // Phaser is loaded from CDN in index.html
 
+/**
+ * Detects if the app is running on a mobile device
+ * Uses multiple signals for reliability (not screen size dependent)
+ */
+function isMobileDevice() {
+  // Check 1: User Agent (most reliable - catches Android, iOS, etc.)
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+  const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+  const isMobileUA = mobileRegex.test(userAgent);
+  
+  // Check 2: Touch capability + Pointer type (mobile devices have touch + coarse pointer)
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const hasCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  const isTouchDevice = hasTouch && hasCoarsePointer;
+  
+  // Check 3: Platform (mobile OS strings)
+  const platform = navigator.platform?.toLowerCase() || '';
+  const isMobilePlatform = /android|iphone|ipad|ipod|mobile/i.test(platform);
+  
+  // Mobile if: (UA says mobile) OR (touch + coarse pointer) OR (mobile platform)
+  // Note: We don't check screen size because high-DPI phones can have large CSS dimensions
+  return isMobileUA || isTouchDevice || isMobilePlatform;
+}
+
 export default class MainScene extends Phaser.Scene {
   preload() {
     this.load.image("cardBack", "./assets/card-back.png");
@@ -21,14 +45,14 @@ export default class MainScene extends Phaser.Scene {
     const screenW = this.scale.gameSize.width;
     const screenH = this.scale.gameSize.height;
 
-    // Better responsive scaling - use smaller base for mobile
-    const isMobile = screenW < 768;
-    const baseWidth = isMobile ? 360 : 800;
-    const baseHeight = isMobile ? 640 : 800;
+    // Better responsive scaling - detect mobile device properly
+    const isMobile = isMobileDevice();
+    const baseWidth = isMobile ? 400 : 800;
+    const baseHeight = isMobile ? 700 : 800;
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.95; // 0.9 to add some padding
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.88; // Reduced padding to fit cards better
 
     this.rows = 4;
     this.cols = 4;
@@ -38,9 +62,9 @@ export default class MainScene extends Phaser.Scene {
 
     // dynamic card measurements - adjusted for better mobile support
     const baseCardSize = isMobile ? 90 : 90;
-    this.cardSize = baseCardSize * 0.4 * scaleFactor;
-    this.spacing = (isMobile ? 80 : 100) * scaleFactor;
-    this.topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
+    this.cardSize = baseCardSize * 0.28 * scaleFactor; // Further reduced for smaller cards
+    this.spacing = (isMobile ? 65 : 100) * scaleFactor; // Increased spacing for better visibility
+    this.topExtraSpacing = (isMobile ? 40 : 70) * scaleFactor; // Increased vertical spacing
 
     // dynamic scale used for both front + back flip
     // Let Phaser handle high-DPI scaling naturally (no clamping needed)
@@ -122,18 +146,18 @@ export default class MainScene extends Phaser.Scene {
     const screenW = this.scale.gameSize.width;
     const screenH = this.scale.gameSize.height;
 
-    const isMobile = screenW < 768;
+    const isMobile = isMobileDevice();
     const baseWidth = isMobile ? 400 : 800;
-    const baseHeight = isMobile ? 600 : 800;
+    const baseHeight = isMobile ? 700 : 800;
 
     const scaleFactorW = screenW / baseWidth;
     const scaleFactorH = screenH / baseHeight;
-    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.9;
+    const scaleFactor = Math.min(scaleFactorW, scaleFactorH) * 0.88;
 
     const baseCardSize = isMobile ? 90 : 90;
-    const cardSize = baseCardSize * 0.5 * scaleFactor;
-    const spacing = (isMobile ? 80 : 100) * scaleFactor;
-    const topExtraSpacing = (isMobile ? 50 : 70) * scaleFactor;
+    const cardSize = baseCardSize * 0.28 * scaleFactor; // Further reduced for smaller cards
+    const spacing = (isMobile ? 65 : 100) * scaleFactor; // Increased spacing for better visibility
+    const topExtraSpacing = (isMobile ? 40 : 70) * scaleFactor; // Increased vertical spacing
 
     // Let Phaser handle high-DPI scaling naturally (no clamping needed)
     const cardBackScale = cardSize / 100;
